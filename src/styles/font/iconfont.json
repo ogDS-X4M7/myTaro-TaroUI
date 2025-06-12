@@ -1,0 +1,23 @@
+{
+  "id": "4945958",
+  "name": "myicon",
+  "font_family": "myicon",
+  "css_prefix_text": "myicon-",
+  "description": "myicon",
+  "glyphs": [
+    {
+      "icon_id": "44571361",
+      "name": "hot",
+      "font_class": "hot",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "44571336",
+      "name": "star-outline",
+      "font_class": "star-outline",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    }
+  ]
+}
