@@ -1,13 +1,11 @@
-// @use "~taro-ui/dist/style/index.scss" as *;
-// @import "../node_modules/taro-ui/dist/style/index.scss"
-
-
-
-
-
-
-
-
-
-
-// "../../node_modules/taro-ui/dist/style/index.scss";
+/* 改变主题变量，具体变量名可查看 node_modules/taro-ui/dist/style/variables/default.scss 文件 */
+// 这边改成绿色，但改的不好看，就继续用蓝色吧
+// $color-brand: #6ce861 !default;
+// $color-brand-light: #78f47a !default;
+// $color-brand-dark: #34c282 !default;
+/* The Color of O2Team Brand */
+// $color-brand: #6190E8 !default;
+// $color-brand-light: #78A4F4 !default;
+// $color-brand-dark: #346FC2 !default;
+/* 引入 Taro UI 默认样式 */
+@import "~taro-ui/dist/style/index.scss";

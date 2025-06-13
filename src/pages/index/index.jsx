@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import Taro from '@tarojs/taro';
 import { View, Text, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react';
 import { AtTag, AtButton } from 'taro-ui'
@@ -9,7 +10,7 @@ import HotItem from '../../components/HotItem/HotItem';
 import { inject, observer } from 'mobx-react';
 
 
-const Index = forwardRef(({ counterStore, hotStore },ref) => {
+const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   // useLoad(() => {
   //   console.log('Page loaded.')
   // })
@@ -27,11 +28,34 @@ const Index = forwardRef(({ counterStore, hotStore },ref) => {
     // flag = !flag;
     setFlag(!flag);
   }
-  const fetchData = () => {
-    console.log('获取数据')
-    hotStore.getHots();
+  const fetchData = async () => {
+    const getResult = await hotStore.getHots();
+    if (getResult === true) {
+      console.log('获取数据成功')
+    } else {
+      console.log('获取数据失败，原因：', getResult)
+    }
   }
-
+  function toHotDetail(hot) {
+    Taro.navigateTo({
+      url: `/pages/hot/hot?id=${hot.id}`,
+      events: {
+        // 为指定事件添加一个监听器，获取被打开页面传送到当前页面的数据
+        acceptDataFromOpenedPage: function (data) {
+          console.log(data)
+        },
+      },
+      success: function (res) {
+        // 通过eventChannel向被打开页面传送数据
+        // res.eventChannel.emit('acceptDataFromOpenerPage', { data: 'test' })
+      }
+    })
+    // redirectTo重定向，会从栈中弹出一个，再让自己入栈
+    // Taro.redirectTo({
+    //   url: '/pages/hot/hot'
+    // })
+    console.log(hot.id)
+  }
   useEffect(() => {
     console.log('Page loaded')
   }, [])
@@ -51,7 +75,7 @@ const Index = forwardRef(({ counterStore, hotStore },ref) => {
         hotStore.hots.map((hot)=><View key={hot.id}>{hot.title}</View>)
       } */}
       {
-        hotStore.hots.map((hot) => <HotItem key={hot.id} hot={hot} />)
+        hotStore.hots.map((hot) => <HotItem key={hot.id} hot={hot} toHotDetail={toHotDetail} />)
       }
     </View>
   )
