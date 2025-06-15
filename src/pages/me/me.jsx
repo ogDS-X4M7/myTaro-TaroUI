@@ -83,6 +83,7 @@ const Me = forwardRef((props, ref) => {
             const loginres = await Taro.login();
             if (loginres.code) {
                 console.log('登录成功')
+                console.log(loginres.code)
                 if (loginRef.current) {
                     loginRef.current.removeEventListener('tap', OpenModal)
                     console.log('移除成功')

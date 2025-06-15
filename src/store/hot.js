@@ -6,7 +6,7 @@ const hotStore = observable({
     try {
       const result = await service.getHotList();
       // console.log(result);
-      console.log(result.data.data);
+      // console.log(result.data);
       runInAction(() => {
         // 在 runInAction 中修改状态
         // this.hots.push(...result.data.data);
