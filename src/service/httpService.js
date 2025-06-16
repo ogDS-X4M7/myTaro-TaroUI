@@ -7,15 +7,19 @@ const interceptor = function (chain) {
     const { method, data, url } = requestParams
 
     // console.log(`http ${method || 'GET'} --> ${url} data: `, data)
-    
+
+    // 添加加载
+    Taro.showNavigationBarLoading();
+    Taro.showLoading()
+
     // console.log(requestParams)
     // debugger
     // 添加token
     const token = Taro.getStorageSync('token')
     // console.log(token);
-    if(token){
+    if (token) {
         requestParams.header = { ...requestParams.header, authorization: `Bearer ${token}` }
-    }else{
+    } else {
         console.log('请先登录')
     }
     // console.log(requestParams)
@@ -28,6 +32,9 @@ const interceptor = function (chain) {
     return chain.proceed(requestParams)
         .then(res => {
             // console.log(`http <-- ${url} result:`, res)
+            // 关闭加载
+            Taro.hideNavigationBarLoading()
+            Taro.hideLoading();
             return res
         })
 }
@@ -52,8 +59,8 @@ export default {
     get(option) {
         return this.request(option, 'GET');
     },
-    post(option){
-        return this.request(option,'POST')
+    post(option) {
+        return this.request(option, 'POST')
     }
 }
 

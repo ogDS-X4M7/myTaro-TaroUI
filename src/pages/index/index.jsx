@@ -17,6 +17,7 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   // const {counterStore} = props;
   const [text, setText] = useState('123');
   const [flag, setFlag] = useState(true);
+  const [hotsFlag, setHotsFlag] = useState(false);
   // let flag = true;
 
   const handleClickSettext = function () {
@@ -29,19 +30,27 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
     setFlag(!flag);
   }
   const fetchData = async () => {
-    const getResult = await hotStore.getHots();
-    if (getResult === true) {
-      console.log('获取数据成功')
+    if (hotsFlag) {
       Taro.atMessage({
-        'message': '获取数据成功',
-        'type': '',
+        'message': '您已经获取热点数据了哦',
+        'type': 'success',
       })
     } else {
-      console.log('获取数据失败，原因：', getResult)
-      Taro.atMessage({
-        'message': '请先登录',
-        'type': 'error',
-      })
+      const getResult = await hotStore.getHots();
+      if (getResult === true) {
+        // console.log('获取数据成功')
+        setHotsFlag(true);
+        Taro.atMessage({
+          'message': '获取数据成功',
+          'type': '',
+        })
+      } else {
+        console.log('获取数据失败，原因：', getResult)
+        Taro.atMessage({
+          'message': '请先登录',
+          'type': 'error',
+        })
+      }
     }
   }
   function toHotDetail(hot) {
@@ -91,6 +100,6 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   )
 })
 
-export default inject('counterStore', 'hotStore','userStore')(observer(Index))
+export default inject('counterStore', 'hotStore', 'userStore')(observer(Index))
 // observable 是用来创建 / 转换状态数据的，不能直接包装组件,将普通对象、数组或类转换为可观察对象。
 // observer 是 MobX 提供的高阶组件，用于将 React 组件转换为响应式组件。
