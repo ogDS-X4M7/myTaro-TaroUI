@@ -45,8 +45,9 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
     }
   }
   function toHotDetail(hot) {
+    const encodeUrl = encodeURIComponent(hot.url)
     Taro.navigateTo({
-      url: `/pages/hot/hot?id=${hot.id}`,
+      url: `/pages/hot/hot?id=${hot.id}&url=${encodeUrl}&hot=${hot.hot}`,
       events: {
         // 为指定事件添加一个监听器，获取被打开页面传送到当前页面的数据
         acceptDataFromOpenedPage: function (data) {
@@ -62,7 +63,7 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
     // Taro.redirectTo({
     //   url: '/pages/hot/hot'
     // })
-    console.log(hot.id)
+    // console.log(hot.id)
   }
   useEffect(() => {
     console.log('Page loaded')

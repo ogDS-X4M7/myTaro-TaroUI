@@ -7,9 +7,9 @@ const hotStore = observable({
       const result = await service.getHotList();
       // console.log(result);
       // console.log(result.data);
+      // this.hots.push(...result.data.data);
       runInAction(() => {
         // 在 runInAction 中修改状态
-        // this.hots.push(...result.data.data);
         this.hots = result.data.data.map(item => ({
           ...item,
           // 如果原数据没有 id，添加唯一标识
