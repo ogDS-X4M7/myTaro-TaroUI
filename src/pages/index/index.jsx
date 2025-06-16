@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import Taro from '@tarojs/taro';
 import { View, Text, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react';
-import { AtTag, AtButton } from 'taro-ui'
+import { AtTag, AtButton, AtMessage } from 'taro-ui'
 // import { useLoad } from '@tarojs/taro'
 import './index.scss'
 // import Item from '../../components/classComponent/classComponent';
@@ -32,8 +32,16 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
     const getResult = await hotStore.getHots();
     if (getResult === true) {
       console.log('获取数据成功')
+      Taro.atMessage({
+        'message': '获取数据成功',
+        'type': '',
+      })
     } else {
       console.log('获取数据失败，原因：', getResult)
+      Taro.atMessage({
+        'message': '请先登录',
+        'type': 'error',
+      })
     }
   }
   function toHotDetail(hot) {
@@ -61,6 +69,7 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   }, [])
   return (
     <View className='index' ref={ref}>
+      <AtMessage />
       {/* <Text>Hello world!</Text>
       <Text>{text}</Text>
       <Item text='789' /> */}
@@ -68,9 +77,9 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
       {/* <Button onClick={handleClickSettext}>修改</Button>
       <Text>{counterStore.counter}</Text>
       <Button onClick={()=>counterStore.increment()}>+</Button> */}
-      <AtTag type='primary' circle active>标签1</AtTag>
-      <AtButton type='primary'>按钮文案</AtButton>
-      <Button onClick={fetchData}>获取热点信息</Button>
+      {/* <AtTag type='primary' circle active>标签1</AtTag> */}
+      <AtButton type='primary' onClick={fetchData}>获取热点信息</AtButton>
+      {/* <Button onClick={fetchData}>获取热点信息</Button> */}
       {/* {
         hotStore.hots.map((hot)=><View key={hot.id}>{hot.title}</View>)
       } */}
@@ -81,6 +90,6 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   )
 })
 
-export default inject('counterStore', 'hotStore')(observer(Index))
+export default inject('counterStore', 'hotStore','userStore')(observer(Index))
 // observable 是用来创建 / 转换状态数据的，不能直接包装组件,将普通对象、数组或类转换为可观察对象。
 // observer 是 MobX 提供的高阶组件，用于将 React 组件转换为响应式组件。

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction } from 'taro-ui'
 import Taro from '@tarojs/taro';
 import './me.scss'
+import userStore from '../../store/user';
+import { inject,observer } from 'mobx-react';
 
 
 const Me = forwardRef((props, ref) => {
@@ -81,9 +83,11 @@ const Me = forwardRef((props, ref) => {
     async function handleConfirm() {
         try {
             const loginres = await Taro.login();
-            if (loginres.code) {
+            if (loginres && loginres.code) {
                 console.log('登录成功')
                 console.log(loginres.code)
+                const user = await userStore.wxLogin(loginres.code);
+                console.log(user)
                 if (loginRef.current) {
                     loginRef.current.removeEventListener('tap', OpenModal)
                     console.log('移除成功')
@@ -128,4 +132,5 @@ const Me = forwardRef((props, ref) => {
     )
 })
 
-export default Me
+// export default Me
+export default inject('userStore')(observer(Me))
