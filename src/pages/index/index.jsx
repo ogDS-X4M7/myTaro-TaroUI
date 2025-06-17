@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import Taro from '@tarojs/taro';
 import { View, Text, Button } from '@tarojs/components'
 import { useState, useEffect } from 'react';
-import { AtTag, AtButton, AtMessage } from 'taro-ui'
+import { AtTag, AtButton, AtMessage, AtTabs, AtTabsPane } from 'taro-ui'
 // import { useLoad } from '@tarojs/taro'
 import './index.scss'
 // import Item from '../../components/classComponent/classComponent';
@@ -15,20 +15,20 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   //   console.log('Page loaded.')
   // })
   // const {counterStore} = props;
-  const [text, setText] = useState('123');
-  const [flag, setFlag] = useState(true);
-  const [hotsFlag, setHotsFlag] = useState(false);
+  // const [text, setText] = useState('123'); // 学习测试修改text，使用settext修改作为状态(state)的text的值
+  // const [flag, setFlag] = useState(true); // 同时增加一个信号标志，这样可以修改多次，而不只是一次
   // let flag = true;
-
-  const handleClickSettext = function () {
-    if (flag) {
-      setText('000');
-    } else {
-      setText('123')
-    }
-    // flag = !flag;
-    setFlag(!flag);
-  }
+  // const handleClickSettext = function () {
+  //   if (flag) {
+  //     setText('000');
+  //   } else {
+  //     setText('123')
+  //   }
+  //   // flag = !flag;
+  //   setFlag(!flag);
+  // }
+  const [hotsFlag, setHotsFlag] = useState(false); // 热点获取状态，避免重复获取
+  const [current,setCurrent] = useState(0); // 标签页页数状态 
   const fetchData = async () => {
     if (hotsFlag) {
       Taro.atMessage({
@@ -53,6 +53,8 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
       }
     }
   }
+
+
   function toHotDetail(hot) {
     const encodeUrl = encodeURIComponent(hot.url)
     Taro.navigateTo({
@@ -74,28 +76,68 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
     // })
     // console.log(hot.id)
   }
+
+
+  function handleTabs (value) {
+    // console.log(value)
+    setCurrent(value)
+  }
   useEffect(() => {
     console.log('Page loaded')
   }, [])
   return (
     <View className='index' ref={ref}>
       <AtMessage />
+      <AtTabs
+        current={current}
+        scroll
+        tabList={[
+          { title: '热点获取' },
+          { title: '使用须知' },
+          { title: '视频播放' },
+          { title: '携程样式' },
+          { title: '标签页5' },
+          { title: '标签页6' }
+        ]}
+        onClick={handleTabs}>
+        <AtTabsPane current={current} index={0}>
+          <View>
+            <AtButton type='primary' onClick={fetchData}>获取热点信息</AtButton>
+            {
+              hotStore.hots.map((hot) => <HotItem key={hot.id} hot={hot} toHotDetail={toHotDetail} />)
+            }
+          </View>
+        </AtTabsPane>
+        <AtTabsPane current={current} index={1}>
+          <View style='font-size:18px;text-align:center;height:100px;'>标签页二的内容</View>
+        </AtTabsPane>
+        <AtTabsPane current={current} index={2}>
+          <View style='font-size:18px;text-align:center;height:100px;'>标签页三的内容</View>
+        </AtTabsPane>
+        <AtTabsPane current={current} index={3}>
+          <View style='font-size:18px;text-align:center;height:100px;'>标签页四的内容</View>
+        </AtTabsPane>
+        <AtTabsPane current={current} index={4}>
+          <View style='font-size:18px;text-align:center;height:100px;'>标签页五的内容</View>
+        </AtTabsPane>
+        <AtTabsPane current={current} index={5}>
+          <View style='font-size:18px;text-align:center;height:100px;'>标签页六的内容</View>
+        </AtTabsPane>
+      </AtTabs>
+      
       {/* <Text>Hello world!</Text>
       <Text>{text}</Text>
-      <Item text='789' /> */}
-      {/* <Button onClick={()=>setText('000')}>修改</Button> */}
-      {/* <Button onClick={handleClickSettext}>修改</Button>
+      <Item text='789' />
+      <Button onClick={()=>setText('000')}>修改</Button>
+      <Button onClick={handleClickSettext}>修改</Button>
       <Text>{counterStore.counter}</Text>
-      <Button onClick={()=>counterStore.increment()}>+</Button> */}
-      {/* <AtTag type='primary' circle active>标签1</AtTag> */}
-      <AtButton type='primary' onClick={fetchData}>获取热点信息</AtButton>
-      {/* <Button onClick={fetchData}>获取热点信息</Button> */}
-      {/* {
+      <Button onClick={()=>counterStore.increment()}>+</Button>
+      <AtTag type='primary' circle active>标签1</AtTag>
+      <Button onClick={fetchData}>获取热点信息</Button>
+      {
         hotStore.hots.map((hot)=><View key={hot.id}>{hot.title}</View>)
       } */}
-      {
-        hotStore.hots.map((hot) => <HotItem key={hot.id} hot={hot} toHotDetail={toHotDetail} />)
-      }
+      
     </View>
   )
 })

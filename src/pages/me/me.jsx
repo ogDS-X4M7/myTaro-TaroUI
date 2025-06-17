@@ -1,7 +1,7 @@
 import React, { forwardRef, useRef } from 'react';
 import { View, Text, Button } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react';
-import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction } from 'taro-ui'
+import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction, AtAvatar, AtDrawer } from 'taro-ui'
 import Taro from '@tarojs/taro';
 import './me.scss'
 import userStore from '../../store/user';
@@ -11,6 +11,7 @@ import { inject,observer } from 'mobx-react';
 const Me = forwardRef((props, ref) => {
     const [needAuth, setNeedAuth] = useState(true);
     const [isOpened, setIsOpened] = useState(false);
+    const [showDrawer,setShowDrawer] = useState(false)
     const loginRef = useRef(null);
     useEffect(() => {
         // loginRef.current.addEventListener('tap', OpenModal);
@@ -37,17 +38,25 @@ const Me = forwardRef((props, ref) => {
         //                 desc: '用于完善会员资料', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
         //                 success: (res) => {
         //                     // 开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
-        //                     setUserInfo(res.userInfo);
-        //                     setHasUserInfo(true);
+        //                     // setUserInfo(res.userInfo);
+        //                     // setHasUserInfo(true);
+        //                     console.log(res.userInfo)
         //                 }
         //             })
         //         }
         //     }
         // })
     }, [])
-    function OpenModal() {
+
+    // function OpenModal() {
+    //     setIsOpened(true);
+    // }
+    // 优化OpenModal函数，使用事件对象阻止冒泡
+    const OpenModal = useCallback((e) => {
+        // 阻止事件冒泡，避免影响内部元素的事件处理
+        e.stopPropagation();
         setIsOpened(true);
-    }
+    }, [setIsOpened]);
     function handleCancel() {
         setIsOpened(false);
     }
@@ -102,6 +111,13 @@ const Me = forwardRef((props, ref) => {
             setIsOpened(false);
         }
     }
+
+    function updateInfo(){
+        setShowDrawer(true)
+        console.log('尝试使用抽屉')
+    }
+
+    
     return (
         <View className='me' ref={ref}>
             {/* <AtTag type='primary' circle active>标签2</AtTag>
@@ -110,10 +126,18 @@ const Me = forwardRef((props, ref) => {
             <View ref={loginRef} onClick={OpenModal}>
                 {
                     needAuth
-                        ? <View>
-                            <Text className='className'>请先授权登录</Text>
+                        ? <View className='userInfo '>
+                                <AtAvatar className='userAvatar' circle image='https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132'></AtAvatar>
+                                {/* <AtAvatar className='userAvatar' circle image='../../assets/me.png'></AtAvatar> // 这种写法经测试不可行 */}
+                                <Text className='userName'>请先授权登录</Text>
                         </View>
                         : <View>
+                            <View className='userInfo'>
+                                <AtAvatar className='userAvatar' circle image=''></AtAvatar>
+                                <Text className='userName' onClickCapture={updateInfo}>微信用户</Text>
+                            </View>
+                            {/* <AtButton onClickCapture={updateInfo}>修改/更新信息</AtButton>  // 非常有意思，使用AtButton将无法使用update*/}
+                            <Button onClickCapture={updateInfo}>修改/更新信息</Button> {/* 但普通的Button可以 */}
                             <Text>个人页面</Text>
                         </View>
                 }
@@ -128,6 +152,15 @@ const Me = forwardRef((props, ref) => {
                 onConfirm={handleConfirm}
                 content='获取您的登录许可'
             />
+            <AtDrawer
+              show={showDrawer}
+              mask
+            >
+              <View className='drawer-item'>优先展示items里的数据</View>
+              <View className='drawer-item'>如果items没有数据就会展示children</View>
+              {/* <View className='drawer-item'>这是自定义内容 <AtIcon value='home' size='20' /></View>
+              <View className='drawer-item'>这是自定义内容</View> */}
+            </AtDrawer>
         </View>
     )
 })

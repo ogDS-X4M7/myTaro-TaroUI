@@ -1,0 +1,26 @@
+.userInfo {
+    position: relative;
+    width: auto;
+    height: 300px;
+    margin: 40px 10px;
+    // background-color: #f7f5f5;
+    background: linear-gradient(to bottom right,#b3d1ec,#f7f5f5);
+    box-shadow: 1px 1px 2px 4px #d0d0d0;
+    .userAvatar {
+        position: absolute;
+        width: 130px;
+        height: 130px;
+        left: 30px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    .userName {
+        position: absolute;
+        left: 200px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 46px;
+        color: #333;
+    }
+    
+}
