@@ -4,8 +4,9 @@
     height: 300px;
     margin: 40px 10px;
     // background-color: #f7f5f5;
-    background: linear-gradient(to bottom right,#b3d1ec,#f7f5f5);
+    background: linear-gradient(to bottom right, #b3d1ec, #f7f5f5);
     box-shadow: 1px 1px 2px 4px #d0d0d0;
+
     .userAvatar {
         position: absolute;
         width: 130px;
@@ -14,6 +15,7 @@
         top: 50%;
         transform: translateY(-50%);
     }
+
     .userName {
         position: absolute;
         left: 200px;
@@ -22,5 +24,31 @@
         font-size: 46px;
         color: #333;
     }
-    
+
+}
+
+// 更新提示标语
+.updateTitle {
+    text-align: center;
+    margin: 40px auto;
+}
+
+// 微信上传头像部分的样式
+.avatar-wrapper {
+    width: 200px;
+    height: 150px;
+
+    .avatar {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+// 微信更改昵称样式
+.weui-input {
+    height: 80px;
+    margin: 40px;
+    text-align: center;
+    // background: #b3d1ec;
+    background: linear-gradient(to bottom right, #b3d1ec, #f7f5f5);
 }

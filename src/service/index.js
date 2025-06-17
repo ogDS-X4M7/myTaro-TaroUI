@@ -13,10 +13,10 @@ const service = {
             url: 'http://127.0.0.1:7002/api/v1/hots',
         })
     },
-    wxLogin(code){
+    wxLogin(code) {
         return httpService.post({
-            url:'http://127.0.0.1:7002/api/v1/wxLogin',
-            data:{
+            url: 'http://127.0.0.1:7002/api/v1/wxLogin',
+            data: {
                 code
             }
         })
