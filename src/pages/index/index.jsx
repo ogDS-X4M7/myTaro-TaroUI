@@ -28,7 +28,8 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   //   setFlag(!flag);
   // }
   const [hotsFlag, setHotsFlag] = useState(false); // 热点获取状态，避免重复获取
-  const [current,setCurrent] = useState(0); // 标签页页数状态 
+  const [current, setCurrent] = useState(0); // 标签页页数状态 
+  let token = Taro.getStorageSync('token')
   const fetchData = async () => {
     if (hotsFlag) {
       Taro.atMessage({
@@ -36,16 +37,25 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
         'type': 'success',
       })
     } else {
-      const getResult = await hotStore.getHots();
-      if (getResult === true) {
-        // console.log('获取数据成功')
-        setHotsFlag(true);
-        Taro.atMessage({
-          'message': '获取数据成功',
-          'type': '',
-        })
+      token = Taro.getStorageSync('token')
+      // console.log(token);
+      // 有token再发请求，不然taro框架内部的文件发现请求失败就要在控制台报错，虽然不影响功能，但不美观
+      if (token) {
+        const getResult = await hotStore.getHots();
+        if (getResult === true) {
+          // console.log('获取数据成功')
+          setHotsFlag(true);
+          Taro.atMessage({
+            'message': '获取数据成功',
+            'type': '',
+          })
+        } else {
+          Taro.atMessage({
+            'message': `获取失败，${getResult}`,
+            'type': 'error',
+          })
+        }
       } else {
-        console.log('获取数据失败，原因：', getResult)
         Taro.atMessage({
           'message': '请先登录',
           'type': 'error',
@@ -78,7 +88,7 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   }
 
 
-  function handleTabs (value) {
+  function handleTabs(value) {
     // console.log(value)
     setCurrent(value)
   }
@@ -124,7 +134,7 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
           <View style='font-size:18px;text-align:center;height:100px;'>标签页六的内容</View>
         </AtTabsPane>
       </AtTabs>
-      
+
       {/* <Text>Hello world!</Text>
       <Text>{text}</Text>
       <Item text='789' />
@@ -137,7 +147,7 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
       {
         hotStore.hots.map((hot)=><View key={hot.id}>{hot.title}</View>)
       } */}
-      
+
     </View>
   )
 })

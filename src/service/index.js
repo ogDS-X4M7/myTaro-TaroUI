@@ -25,7 +25,17 @@ const service = {
     //     return httpService.get({
     //         url:'http://127.0.0.1:7002/api/v1/ticket',
     //     })
-    // }
+    // },
+    userInfo(params) {
+        return httpService.post({
+            url: 'http://127.0.0.1:7002/api/v1/updateUser',
+            data: {
+                token: params.token,
+                avatarUrl: params.avatarUrl,
+                userName: params.userName
+            }
+        })
+    }
 }
 
 export default service;

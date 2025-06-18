@@ -104,7 +104,10 @@ const Me = forwardRef((props, ref) => {
                 console.log('登录成功')
                 console.log(loginres.code)
                 const user = await userStore.wxLogin(loginres.code);
-                console.log(user)
+                // console.log(user)
+                // console.log(user.data)
+                setUserAvatarUrl(user.data.data.avatarUrl)
+                setUserName(user.data.data.userName)
                 if (loginRef.current) {
                     loginRef.current.removeEventListener('tap', OpenModal)
                     console.log('移除成功')
@@ -136,6 +139,18 @@ const Me = forwardRef((props, ref) => {
         // console.log('更改') // 经测试每改一下就会执行一次
         setUserName(e.detail.value)
     }
+
+    // 远程更新用户信息
+    async function UpdateUserInfo() {
+        const token = Taro.getStorageSync('token')
+        let params = { token: token, avatarUrl: userAvatarUrl, userName: userName };
+        if (token) {
+            const resUpdate = await userStore.userInfo(params);
+            console.log(resUpdate);
+        } else {
+
+        }
+    }
     return (
         <View className='me' ref={ref}>
             {/* <AtTag type='primary' circle active>标签2</AtTag>
@@ -156,6 +171,7 @@ const Me = forwardRef((props, ref) => {
                             </View>
                             {/* <AtButton onClickCapture={updateInfo}>修改/更新信息</AtButton>  // 非常有意思，使用AtButton将无法使用update*/}
                             <Button onClickCapture={updateInfo}>修改/更新信息</Button> {/* 但普通的Button可以 */}
+                            <Button onClickCapture={UpdateUserInfo}>修改/更新测试</Button>
                             {/* 关于这部分内容我想记录一下：
                             把具有点击触发的组件放到之前有过onclick的view里似乎都会失效，因此我把按钮拿出来，
                             果然可以使用了，但我尝试点击<Text className='userName' onClick={updateInfo}>微信用户</Text>，虽然没有反应，

@@ -3,14 +3,14 @@ import { observable } from "mobx";
 import service from "../service";
 
 const userStore = observable({
-    user:null,
-    async wxLogin(code){
+    user: null,
+    async wxLogin(code) {
         const res = await service.wxLogin(code)
-        console.log(res);
-        if(res && res.data.success && res.data.data){
+        // console.log(res);
+        if (res && res.data.success && res.data.data) {
             try {
-                Taro.setStorageSync('token',res.data.data.token)
-            }catch(err){
+                Taro.setStorageSync('token', res.data.data.token)
+            } catch (err) {
                 throw new Error(err);
             }
         }
@@ -21,6 +21,11 @@ const userStore = observable({
     //     console.log(res);
     //     return res;
     // }
+    async userInfo(params) {
+        const res = await service.userInfo(params)
+        console.log(res);
+        return res;
+    }
 })
 
 export default userStore 
