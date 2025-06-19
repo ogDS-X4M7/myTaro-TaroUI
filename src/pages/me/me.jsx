@@ -25,11 +25,30 @@ const Me = forwardRef((props, ref) => {
     const [userAvatarUrlTemp, setUserAvatarUrlTemp] = useState('https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132')
     // 临时昵称，填写抽屉修改信息
     const [userNameTemp, setUserNameTemp] = useState(userName)
+    let token = '';
 
-    useEffect(() => {
+    useEffect(async () => {
         // loginRef.current.addEventListener('tap', OpenModal);
         // console.log(loginRef)
         console.log('Page loaded')
+        token = Taro.getStorageSync('token')
+        if (token) {
+            // 有token说明登陆过，可以自动登录
+            let autoLoginResult = await userStore.autoLogin(token);
+            // console.log(autoLoginResult.data);
+            setUserAvatarUrl(autoLoginResult.data.data.userAvatarUrl)
+            setUserName(autoLoginResult.data.data.userName)
+            // 把更新抽屉中的头像和昵称也一起设置，注意这里不能用setUserNameTemp(userName)，异步执行会导致出问题
+            setUserAvatarUrlTemp(autoLoginResult.data.data.userAvatarUrl)
+            setUserNameTemp(autoLoginResult.data.data.userName)
+            // 记得显示内容就得切换为权限页面了
+            if (loginRef.current) {
+                loginRef.current.removeEventListener('tap', OpenModal)
+                console.log('移除成功')
+            }
+            setNeedAuth(false);
+        }
+
         // 写完每次都发现返回res.authSetting['scope.userInfo']为true，经查看微信官方文档，现在已经不适用这些api获取信息了，
         // getSetting拿到的一定是true授权，getUserInfo拿到的是匿名信息;
         // 于是转而想考虑使用getUserProfile，结果折腾半天getUserProfile也他妈停用了，它们觉得用wx.login就够了
@@ -90,6 +109,12 @@ const Me = forwardRef((props, ref) => {
                 // 把更新抽屉中的头像和昵称也一起设置，注意这里不能用setUserNameTemp(userName)，异步执行会导致出问题
                 setUserAvatarUrlTemp(user.data.data.avatarUrl)
                 setUserNameTemp(user.data.data.userName)
+                // 注意到登录其实也只是获取头像和昵称，因此自动登录只要token、头像、昵称暂存起来即可实现
+                // 不过本地暂存并不可靠，从redis缓存中获取可能更合适，因此在redis中设置可通过token获取的头像昵称缓存
+                // 随后在这边检测本地有token就发送自动登录请求去用token在redis里拿缓存，到个人页面显示
+                // 至于其他页面的登录，只要有token并且未过期，发送请求都不会有任何问题
+                // 因此实现有token则已登录，可请求，个人页面显示对应内容，即这里的挂载则自动登录就可以，注意反复挂载也只需自动登录一次
+                // 不过注意到'Page loaded'并没有随tab切换而输出多次，因此在useEffect里实现的自动登录也没有多次登录的担忧了
                 if (loginRef.current) {
                     loginRef.current.removeEventListener('tap', OpenModal)
                     console.log('移除成功')
@@ -121,7 +146,7 @@ const Me = forwardRef((props, ref) => {
         // console.log('更改') // 经测试每改一下就会执行一次
         setUserNameTemp(e.detail.value)
     }
-    
+
 
     // 远程更新用户信息
     async function UpdateUserInfo() {
@@ -139,7 +164,7 @@ const Me = forwardRef((props, ref) => {
     }
 
     // 确认修改信息
-    async function confirmUpdateInfo(){
+    async function confirmUpdateInfo() {
         console.log('确认修改')
         // 澄清：我一开始尝试使用setTimeout来测试优先级，在js中setTimeout的回调已经是异步任务优先级最低的，没想到这里UpdateUserInfo执行时仍然拿到的是更新前的信息
         // 这导致我误会状态更新会最后执行，事实上这是没有理解状态更新导致的误解：
@@ -159,16 +184,16 @@ const Me = forwardRef((props, ref) => {
     }
 
     // 取消修改
-    function cancelUpdateInfo(){
+    function cancelUpdateInfo() {
         setUserAvatarUrlTemp(userAvatarUrl)
         setUserNameTemp(userName)
         setShowDrawer(false)
     }
 
     // 
-    function handleGridClick(item, index){
-        console.log('点击了宫格:', item.value, '索引:', index);
-        switch(item.value){
+    function handleGridClick(item, index) {
+        // console.log('点击了宫格:', item.value, '索引:', index);
+        switch (item.value) {
             case '我赞过的':
                 // 后续填写
                 break;
@@ -283,33 +308,33 @@ const Me = forwardRef((props, ref) => {
                             版本兼容性：Taro UI 版本与 React 事件系统的兼容性问题
                             如果真的想知道，就应该查看AtButton的官方文档，确认是否有特殊的事件处理方式 */}
                             <AtGrid data={
-                              [
-                                {
-                                  image: require('../../assets/images/like.png'),
-                                  value: '我赞过的'
-                                },
-                                {
-                                  image: require('../../assets/images/collection.png'),
-                                  value: '我的收藏'
-                                },
-                                {
-                                  image: require('../../assets/images/look.png'),
-                                  value: '浏览历史'
-                                },
-                                {
-                                  image: require('../../assets/images/setting.png'),
-                                  value: '设置'
-                                },
-                                {
-                                  image: require('../../assets/images/edit.png'),
-                                  value: '修改头像昵称'
-                                },
-                                {
-                                  image: require('../../assets/images/about.png'),
-                                  value: '关于作者'
-                                }
-                              ]
-                            } onClick={handleGridClick}/>
+                                [
+                                    {
+                                        image: require('../../assets/images/like.png'),
+                                        value: '我赞过的'
+                                    },
+                                    {
+                                        image: require('../../assets/images/collection.png'),
+                                        value: '我的收藏'
+                                    },
+                                    {
+                                        image: require('../../assets/images/look.png'),
+                                        value: '浏览历史'
+                                    },
+                                    {
+                                        image: require('../../assets/images/setting.png'),
+                                        value: '设置'
+                                    },
+                                    {
+                                        image: require('../../assets/images/edit.png'),
+                                        value: '修改头像昵称'
+                                    },
+                                    {
+                                        image: require('../../assets/images/about.png'),
+                                        value: '关于作者'
+                                    }
+                                ]
+                            } onClick={handleGridClick} />
                         </View>
                 }
             </View>

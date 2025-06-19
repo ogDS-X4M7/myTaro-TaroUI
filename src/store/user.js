@@ -23,6 +23,10 @@ const userStore = observable({
     // }
     async userInfo(params) {
         const res = await service.userInfo(params)
+        return res;
+    },
+    async autoLogin(token) {
+        const res = await service.autoLogin(token)
         console.log(res);
         return res;
     }
