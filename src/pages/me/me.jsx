@@ -1,7 +1,7 @@
 import React, { forwardRef, useRef } from 'react';
 import { View, Text, Button, Input, Image } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react';
-import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction, AtAvatar, AtDrawer } from 'taro-ui'
+import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction, AtAvatar, AtDrawer, AtGrid } from 'taro-ui'
 import Taro from '@tarojs/taro';
 import './me.scss'
 import userStore from '../../store/user';
@@ -21,6 +21,10 @@ const Me = forwardRef((props, ref) => {
     const [userAvatarUrl, setUserAvatarUrl] = useState('https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132')
     // 用户昵称
     const [userName, setUserName] = useState('微信用户')
+    // 临时url，用于填写抽屉修改信息
+    const [userAvatarUrlTemp, setUserAvatarUrlTemp] = useState('https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132')
+    // 临时昵称，填写抽屉修改信息
+    const [userNameTemp, setUserNameTemp] = useState(userName)
 
     useEffect(() => {
         // loginRef.current.addEventListener('tap', OpenModal);
@@ -71,31 +75,6 @@ const Me = forwardRef((props, ref) => {
     function handleClose() {
         setIsOpened(false);
     }
-    // function handleConfirm() {
-    //     Taro.login({
-    //         success: function (res) {
-    //             if (res.code) {
-    //                 console.log('登录成功')
-    //                 // const viewref = loginRef.current
-    //                 if (loginRef.current) {
-    //                     loginRef.current.removeEventListener('tap', OpenModal)
-    //                     console.log('移除成功')
-    //                 }
-    //                 setNeedAuth(false);
-    //                 //     //     //发起网络请求
-    //                 //     //     Taro.request({
-    //                 //     //         url: 'https://test.com/onLogin',
-    //                 //     //         data: {
-    //                 //     //             code: res.code
-    //                 //     //         }
-    //                 //     // })
-    //             } else {
-    //                 console.log('登录失败！' + res.errMsg)
-    //             }
-    //         }
-    //     })
-    //     setIsOpened(false);
-    // }
 
     async function handleConfirm() { // 确认授权
         try {
@@ -108,6 +87,9 @@ const Me = forwardRef((props, ref) => {
                 // console.log(user.data)
                 setUserAvatarUrl(user.data.data.avatarUrl)
                 setUserName(user.data.data.userName)
+                // 把更新抽屉中的头像和昵称也一起设置，注意这里不能用setUserNameTemp(userName)，异步执行会导致出问题
+                setUserAvatarUrlTemp(user.data.data.avatarUrl)
+                setUserNameTemp(user.data.data.userName)
                 if (loginRef.current) {
                     loginRef.current.removeEventListener('tap', OpenModal)
                     console.log('移除成功')
@@ -128,29 +110,82 @@ const Me = forwardRef((props, ref) => {
         setShowDrawer(true)
     }
 
-    // 获取并设置微信头像
+    // 获取并设置微信头像-临时
     function onChooseAvatar(e) {
         const { avatarUrl } = e.detail
-        setUserAvatarUrl(avatarUrl)
+        setUserAvatarUrlTemp(avatarUrl)
     }
 
-    // 更新用户昵称
+    // 更新用户昵称-临时
     function handleUserNameChange(e) {
         // console.log('更改') // 经测试每改一下就会执行一次
-        setUserName(e.detail.value)
+        setUserNameTemp(e.detail.value)
     }
+    
 
     // 远程更新用户信息
     async function UpdateUserInfo() {
         const token = Taro.getStorageSync('token')
-        let params = { token: token, avatarUrl: userAvatarUrl, userName: userName };
+        // 正如下面的confirmUpdateInfo所说，异步执行setState被推迟，因此这里不能使用userAvatarUrl、userName，因为此时他们还未被更新，直接使用更新源的数据即可,打印可以看到效果
+        // console.log(userName)
+        let params = { token: token, avatarUrl: userAvatarUrlTemp, userName: userNameTemp };
+        // console.log(params)
         if (token) {
             const resUpdate = await userStore.userInfo(params);
             console.log(resUpdate);
         } else {
-
+            console.log('用户未登录')
         }
     }
+
+    // 确认修改信息
+    async function confirmUpdateInfo(){
+        console.log('确认修改')
+        // 澄清：我一开始尝试使用setTimeout来测试优先级，在js中setTimeout的回调已经是异步任务优先级最低的，没想到这里UpdateUserInfo执行时仍然拿到的是更新前的信息
+        // 这导致我误会状态更新会最后执行，事实上这是没有理解状态更新导致的误解：
+        // React 状态更新是异步的没错，但它并不是比setTimeout还晚执行，它在事件处理函数（confirmUpdateInfo）结束后就会执行，“事件处理函数执行完毕”说的就是同步代码执行完毕，
+        // 可以理解为打印、setTimeout，关闭抽屉执行完；然后就更新了，顺便讲一下它的目的：
+        // 1.性能优化：将多个 setState 调用批处理为一次更新，减少 DOM 渲染次数。2.状态一致性：避免同步更新导致状态不一致的问题。
+        // 所以setTimeout的回调仍然最后执行，那为什么UpdateUserInfo中取到的userName仍然是更新前的旧值？这是因为 闭包捕获了旧的状态值 ，并且react状态变量的捕获还不同：
+        // 尽管状态已经更新，但 UpdateUserInfo 闭包捕获的是渲染时的值，而不是重新渲染后的新值，异步更新不影响当前闭包，这是最核心的原因。
+        // 一定要区分好普通变量和状态变量
+        setUserAvatarUrl(userAvatarUrlTemp)
+        setUserName(userNameTemp)
+        // setTimeout(() => {
+        //     UpdateUserInfo();
+        // }, 3000);
+        UpdateUserInfo();
+        setShowDrawer(false)
+    }
+
+    // 取消修改
+    function cancelUpdateInfo(){
+        setUserAvatarUrlTemp(userAvatarUrl)
+        setUserNameTemp(userName)
+        setShowDrawer(false)
+    }
+
+    // 
+    function handleGridClick(item, index){
+        console.log('点击了宫格:', item.value, '索引:', index);
+        switch(item.value){
+            case '我赞过的':
+                // 后续填写
+                break;
+            case '我的收藏':
+                break;
+            case '浏览历史':
+                break;
+            case '设置':
+                break;
+            case '修改头像昵称':
+                updateInfo()
+                break;
+            case '关于作者':
+                break;
+        }
+    }
+
     return (
         <View className='me' ref={ref}>
             {/* <AtTag type='primary' circle active>标签2</AtTag>
@@ -162,16 +197,15 @@ const Me = forwardRef((props, ref) => {
                         ? <View className='userInfo '>
                             <AtAvatar className='userAvatar' circle image='https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132'></AtAvatar>
                             {/* <AtAvatar className='userAvatar' circle image='../../assets/me.png'></AtAvatar> // 这种写法经测试不可行 */}
-                            <Text className='userName'>请先授权登录</Text>
+                            <Text className='userName'>点击登录</Text>
                         </View>
                         : <View>
-                            <View className='userInfo'>
-                                <AtAvatar className='userAvatar' circle image={userAvatarUrl}></AtAvatar>
-                                <Text className='userName' onClickCapture={updateInfo}>{userName}</Text>
+                            <View className='userInfo' onClickCapture={updateInfo}>
+                                <AtAvatar className='userAvatar' circle image={userAvatarUrl} ></AtAvatar>
+                                <Text className='userName'>{userName}</Text>
                             </View>
                             {/* <AtButton onClickCapture={updateInfo}>修改/更新信息</AtButton>  // 非常有意思，使用AtButton将无法使用update*/}
-                            <Button onClickCapture={updateInfo}>修改/更新信息</Button> {/* 但普通的Button可以 */}
-                            <Button onClickCapture={UpdateUserInfo}>修改/更新测试</Button>
+                            {/* <Button onClickCapture={updateInfo}>修改/更新信息</Button> // 但普通的Button可以 */}
                             {/* 关于这部分内容我想记录一下：
                             把具有点击触发的组件放到之前有过onclick的view里似乎都会失效，因此我把按钮拿出来，
                             果然可以使用了，但我尝试点击<Text className='userName' onClick={updateInfo}>微信用户</Text>，虽然没有反应，
@@ -248,7 +282,34 @@ const Me = forwardRef((props, ref) => {
                             事件委托机制：组件可能使用了不同的事件委托方式
                             版本兼容性：Taro UI 版本与 React 事件系统的兼容性问题
                             如果真的想知道，就应该查看AtButton的官方文档，确认是否有特殊的事件处理方式 */}
-                            <Text>个人页面</Text>
+                            <AtGrid data={
+                              [
+                                {
+                                  image: require('../../assets/images/like.png'),
+                                  value: '我赞过的'
+                                },
+                                {
+                                  image: require('../../assets/images/collection.png'),
+                                  value: '我的收藏'
+                                },
+                                {
+                                  image: require('../../assets/images/look.png'),
+                                  value: '浏览历史'
+                                },
+                                {
+                                  image: require('../../assets/images/setting.png'),
+                                  value: '设置'
+                                },
+                                {
+                                  image: require('../../assets/images/edit.png'),
+                                  value: '修改头像昵称'
+                                },
+                                {
+                                  image: require('../../assets/images/about.png'),
+                                  value: '关于作者'
+                                }
+                              ]
+                            } onClick={handleGridClick}/>
                         </View>
                 }
             </View>
@@ -265,6 +326,7 @@ const Me = forwardRef((props, ref) => {
             <AtDrawer
                 show={showDrawer}
                 mask
+                right
                 onClose={() => setShowDrawer(false)} // 添加关闭回调
             >
                 {/* 注意open-type="chooseAvatar" 和 chooseAvatar={onChooseAvatar} 被绑定在 Button 组件上无效，Button是Taro组件，
@@ -275,13 +337,15 @@ const Me = forwardRef((props, ref) => {
                     open-type="chooseAvatar"
                     onChooseAvatar={onChooseAvatar} // 直接使用onChooseAvatar，Taro会自动转换为bind:chooseavatar
                 >
-                    <Image className="avatar" src={userAvatarUrl} />
+                    <Image className="avatar" src={userAvatarUrlTemp} />
                 </button>
-                <input type="nickname" class="weui-input" placeholder="请输入昵称" value={userName} onInput={handleUserNameChange} />
-
-                {/* <image class="avatar" src="{{avatarUrl}}"></image> */}
-                {/* <View className='drawer-item'>这是自定义内容 <AtIcon value='home' size='20' /></View>
-              <View className='drawer-item'>这是自定义内容</View> */}
+                <input type="nickname" class="weui-input" placeholder="请输入昵称" value={userNameTemp} onInput={handleUserNameChange} />
+                <View className='updateButton'>
+                    <AtButton onClick={confirmUpdateInfo}>提交</AtButton>
+                </View>
+                <View className='updateButton'>
+                    <AtButton onClick={cancelUpdateInfo}>取消</AtButton>
+                </View>
             </AtDrawer>
         </View>
     )

@@ -2,7 +2,7 @@
     position: relative;
     width: auto;
     height: 300px;
-    margin: 40px 10px;
+    margin: 40px 10px 80px 10px;
     // background-color: #f7f5f5;
     background: linear-gradient(to bottom right, #b3d1ec, #f7f5f5);
     box-shadow: 1px 1px 2px 4px #d0d0d0;
@@ -51,4 +51,8 @@
     text-align: center;
     // background: #b3d1ec;
     background: linear-gradient(to bottom right, #b3d1ec, #f7f5f5);
+}
+
+.updateButton {
+    margin:30px 10px!important;
 }
