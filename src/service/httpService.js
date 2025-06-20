@@ -20,7 +20,7 @@ const interceptor = function (chain) {
     if (token) {
         requestParams.header = { ...requestParams.header, authorization: `Bearer ${token}` }
     } else {
-        console.log('请先登录')
+        // console.log('请先登录')
     }
     // console.log(requestParams)
     // 这里还意外发现两个console.log打印结果都是添加了token后的内容，原因是没有深拷贝， 

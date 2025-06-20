@@ -27,7 +27,7 @@ const userStore = observable({
     },
     async autoLogin(token) {
         const res = await service.autoLogin(token)
-        console.log(res);
+        // console.log(res);
         return res;
     }
 })

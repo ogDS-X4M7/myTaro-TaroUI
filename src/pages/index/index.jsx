@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import Taro from '@tarojs/taro';
-import { View, Text, Button } from '@tarojs/components'
+import { View, Text, Button, Video, Image } from '@tarojs/components'
 import { useState, useEffect } from 'react';
 import { AtTag, AtButton, AtMessage, AtTabs, AtTabsPane } from 'taro-ui'
 // import { useLoad } from '@tarojs/taro'
@@ -37,27 +37,43 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
         'type': 'success',
       })
     } else {
-      token = Taro.getStorageSync('token')
-      // console.log(token);
-      // 有token再发请求，不然taro框架内部的文件发现请求失败就要在控制台报错，虽然不影响功能，但不美观
-      if (token) {
-        const getResult = await hotStore.getHots();
-        if (getResult === true) {
-          // console.log('获取数据成功')
-          setHotsFlag(true);
-          Taro.atMessage({
-            'message': '获取数据成功',
-            'type': '',
-          })
-        } else {
-          Taro.atMessage({
-            'message': `获取失败，${getResult}`,
-            'type': 'error',
-          })
-        }
+      // token = Taro.getStorageSync('token')
+      // // console.log(token);
+      // // 有token再发请求，不然taro框架内部的文件发现请求失败就要在控制台报错，虽然不影响功能，但不美观
+      // if (token) {
+      //   const getResult = await hotStore.getHots();
+      //   if (getResult === true) {
+      //     // console.log('获取数据成功')
+      //     setHotsFlag(true);
+      //     Taro.atMessage({
+      //       'message': '获取数据成功',
+      //       'type': '',
+      //     })
+      //   } else {
+      //     Taro.atMessage({
+      //       'message': `获取失败，${getResult}`,
+      //       'type': 'error',
+      //     })
+      //   }
+      // } else {
+      //   Taro.atMessage({
+      //     'message': '请先登录',
+      //     'type': 'error',
+      //   })
+      // }
+
+      // 下面是体验服版本，把从else开始部分全部注释掉换成下面即可，也就是不要token
+      const getResult = await hotStore.getHots();
+      if (getResult === true) {
+        // console.log('获取数据成功')
+        setHotsFlag(true);
+        Taro.atMessage({
+          'message': '获取数据成功',
+          'type': '',
+        })
       } else {
         Taro.atMessage({
-          'message': '请先登录',
+          'message': `获取失败，${getResult}`,
           'type': 'error',
         })
       }
@@ -102,36 +118,88 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
         current={current}
         scroll
         tabList={[
-          { title: '热点获取' },
           { title: '使用须知' },
-          { title: '视频播放' },
-          { title: '携程样式' },
-          { title: '标签页5' },
-          { title: '标签页6' }
+          { title: '热点获取' },
+          { title: '天气预报' },
+          { title: '每日英语' },
+          { title: '单词详解' },
+          { title: '携程样式' }
         ]}
         onClick={handleTabs}>
         <AtTabsPane current={current} index={0}>
-          <View>
+          <View className='at-article'>
+            <View className='at-article__h1' style={{ textAlign: 'center', marginBottom: '20px' }}>
+              使用须知的内容
+            </View>
+            {/* <View className='at-article__info'>
+              2017-05-07&nbsp;&nbsp;&nbsp;这是作者
+            </View> */}
+            <View className='at-article__content'>
+              <View className='at-article__section'>
+                {/* <View className='at-article__h2'>这是二级标题</View>
+                <View className='at-article__h3'>这是三级标题</View> */}
+                <View className='at-article__h3' style={{ marginTop: '20px' }}>因为没有部署服务器，只有本地服务器，因此体验服无法使用以下功能：</View>
+                <View className='at-article__p'>
+                  - 服务器支持的登录功能
+                </View>
+                <View className='at-article__p'>
+                  - 点赞、收藏交互功能
+                </View>
+                <View className='at-article__h3' style={{ marginTop: '20px' }}>
+                  目前项目可正常使用以下功能：
+                </View>
+                <View className='at-article__p'>
+                  ✅ 首页-热点内容获取
+                </View>
+                <View className='at-article__p'>
+                  ✅ 短视频播放功能
+                </View>
+                <View className='at-article__p'>
+                  ✅ 知识文档浏览
+                </View>
+                <Image
+                  className='at-article__img'
+                  src={require('../../assets/images/shouldKnow.jpg')}
+                  mode='widthFix' />
+              </View>
+            </View>
+          </View>
+        </AtTabsPane>
+        <AtTabsPane current={current} index={1}>
+          <View style={{ marginTop: '10px' }}>
             <AtButton type='primary' onClick={fetchData}>获取热点信息</AtButton>
             {
               hotStore.hots.map((hot) => <HotItem key={hot.id} hot={hot} toHotDetail={toHotDetail} />)
             }
           </View>
         </AtTabsPane>
-        <AtTabsPane current={current} index={1}>
-          <View style='font-size:18px;text-align:center;height:100px;'>标签页二的内容</View>
-        </AtTabsPane>
+        {/* <AtTabsPane current={current} index={2}>
+          <View style='text-align:center;'>
+            <Video
+              className='videobox'
+              id='video'
+              src='https://wxsnsdy.tc.qq.com/105/20210/snsdyvideodownload?filekey=30280201010421301f0201690402534804102ca905ce620b1241b726bc41dcff44e00204012882540400&bizid=1023&hy=SH&fileparam=302c020101042530230204136ffd93020457e3c4ff02024ef202031e8d7f02030f42400204045a320a0201000400'
+              // poster='https://misc.aotu.io/booxood/mobile-video/cover_900x500.jpg'
+              initialTime={0}
+              controls={true}
+              autoplay={false}
+              loop={false}
+              muted={false}
+              enablePlayGesture={true}
+            />
+          </View>
+        </AtTabsPane> */}
         <AtTabsPane current={current} index={2}>
-          <View style='font-size:18px;text-align:center;height:100px;'>标签页三的内容</View>
+          <View style='font-size:18px;text-align:center;height:100px;'>天气预报的内容</View>
         </AtTabsPane>
         <AtTabsPane current={current} index={3}>
-          <View style='font-size:18px;text-align:center;height:100px;'>标签页四的内容</View>
+          <View style='font-size:18px;text-align:center;height:100px;'>每日英语的内容</View>
         </AtTabsPane>
         <AtTabsPane current={current} index={4}>
-          <View style='font-size:18px;text-align:center;height:100px;'>标签页五的内容</View>
+          <View style='font-size:18px;text-align:center;height:100px;'>单词详解的内容</View>
         </AtTabsPane>
         <AtTabsPane current={current} index={5}>
-          <View style='font-size:18px;text-align:center;height:100px;'>标签页六的内容</View>
+          <View style='font-size:18px;text-align:center;height:100px;'>携程样式的内容</View>
         </AtTabsPane>
       </AtTabs>
 

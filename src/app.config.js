@@ -2,7 +2,10 @@ export default defineAppConfig({
   pages: [
     'pages/index/index',
     'pages/me/me',
-    'pages/hot/hot'
+    'pages/hot/hot',
+    'pages/study/study',
+    'pages/shortvideo/shortvideo',
+    'pages/historyVideo/historyVideo'
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -16,6 +19,16 @@ export default defineAppConfig({
       text: '首页',
       iconPath: 'assets/images/indexnor1.png',
       selectedIconPath: 'assets/images/indexnor1_active.png'
+    }, {
+      pagePath: 'pages/shortvideo/shortvideo',
+      text: '短视频',
+      iconPath: 'assets/images/video.png',
+      selectedIconPath: 'assets/images/video_active.png'
+    }, {
+      pagePath: 'pages/study/study',
+      text: '知识文档',
+      iconPath: 'assets/images/learn.png',
+      selectedIconPath: 'assets/images/learn_active.png'
     }, {
       pagePath: 'pages/me/me',
       text: '我的',

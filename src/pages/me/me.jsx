@@ -4,19 +4,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction, AtAvatar, AtDrawer, AtGrid } from 'taro-ui'
 import Taro from '@tarojs/taro';
 import './me.scss'
-import userStore from '../../store/user';
 import { inject, observer } from 'mobx-react';
 
 
-const Me = forwardRef((props, ref) => {
+const Me = forwardRef(({ userStore, videoStore }, ref) => {
     // 权限信号，用于设置个人页面登录前后内容展示
     const [needAuth, setNeedAuth] = useState(true);
     // 开关信号，设置登录模态框的开关
     const [isOpened, setIsOpened] = useState(false);
+    // 退出提示开关信号，设置退出模态框的开关
+    const [exitTip, setExitTip] = useState(false);
     // 抽屉，控制更新修改个人信息抽屉的开关
     const [showDrawer, setShowDrawer] = useState(false)
     // ref实例，方便增删其事件监听
     const loginRef = useRef(null);
+    // const loginRef = React.createRef();
     // 用户头像url
     const [userAvatarUrl, setUserAvatarUrl] = useState('https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132')
     // 用户昵称
@@ -89,10 +91,12 @@ const Me = forwardRef((props, ref) => {
 
     function handleCancel() {
         setIsOpened(false);
+        setExitTip(false)
     }
 
     function handleClose() {
         setIsOpened(false);
+        setExitTip(false);
     }
 
     async function handleConfirm() { // 确认授权
@@ -157,7 +161,7 @@ const Me = forwardRef((props, ref) => {
         // console.log(params)
         if (token) {
             const resUpdate = await userStore.userInfo(params);
-            console.log(resUpdate);
+            console.log(resUpdate.data.msg);
         } else {
             console.log('用户未登录')
         }
@@ -190,7 +194,16 @@ const Me = forwardRef((props, ref) => {
         setShowDrawer(false)
     }
 
-    // 
+    // 退出登录
+    function exitLogin() {
+        console.log('退出')
+        loginRef.current.addEventListener('tap', OpenModal)
+        Taro.removeStorageSync('token')
+        setNeedAuth(true);
+        setExitTip(false)
+    }
+
+    // grid设置宫格对应方法
     function handleGridClick(item, index) {
         // console.log('点击了宫格:', item.value, '索引:', index);
         switch (item.value) {
@@ -200,14 +213,30 @@ const Me = forwardRef((props, ref) => {
             case '我的收藏':
                 break;
             case '浏览历史':
+                getHistory()
                 break;
-            case '设置':
+            case '关于作者':
                 break;
             case '修改头像昵称':
                 updateInfo()
                 break;
-            case '关于作者':
+            case '退出登录':
+                setExitTip(true)
                 break;
+        }
+    }
+
+    async function getHistory() {
+        token = Taro.getStorageSync('token')
+        if (token) {
+            let res = await videoStore.getHistory(token);
+            console.log(res)
+            Taro.navigateTo({
+                url: `/pages/historyVideo/historyVideo`,
+
+            })
+        } else {
+            console.log('状态异常，请重新登陆')
         }
     }
 
@@ -322,16 +351,16 @@ const Me = forwardRef((props, ref) => {
                                         value: '浏览历史'
                                     },
                                     {
-                                        image: require('../../assets/images/setting.png'),
-                                        value: '设置'
+                                        image: require('../../assets/images/about.png'),
+                                        value: '关于作者'
                                     },
                                     {
                                         image: require('../../assets/images/edit.png'),
                                         value: '修改头像昵称'
                                     },
                                     {
-                                        image: require('../../assets/images/about.png'),
-                                        value: '关于作者'
+                                        image: require('../../assets/images/exit.png'),
+                                        value: '退出登录'
                                     }
                                 ]
                             } onClick={handleGridClick} />
@@ -372,9 +401,20 @@ const Me = forwardRef((props, ref) => {
                     <AtButton onClick={cancelUpdateInfo}>取消</AtButton>
                 </View>
             </AtDrawer>
+            <AtModal
+                isOpened={exitTip}
+                title='退出提示'
+                cancelText='取消'
+                confirmText='确定'
+                onClose={handleClose}
+                onCancel={handleCancel}
+                onConfirm={exitLogin}
+                content='您确定要退出吗'
+            />
+
         </View>
     )
 })
 
 // export default Me
-export default inject('userStore')(observer(Me))
+export default inject('userStore', 'videoStore')(observer(Me))

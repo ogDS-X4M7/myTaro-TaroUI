@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { View, Text, Button,WebView } from '@tarojs/components'
+import { View, Text, Button, WebView } from '@tarojs/components'
 import { useState, useEffect } from 'react';
 import { AtTag, AtButton } from 'taro-ui'
 import Taro from '@tarojs/taro';
@@ -11,10 +11,10 @@ const Hot = forwardRef((props, ref) => {
     const [webViewUrl, setWebViewUrl] = useState('');
     useEffect(() => {
         console.log('Page loaded')
-        console.log(Taro.getCurrentPages().length)// 能够显示当前页面栈深度，如果使用redirect重定向过来的，大概率就是1，这里前面是navigateto过来，所以是2
-        console.log(Taro.getCurrentInstance().router.params)// 前面跳转可以携带params参数，这边通过router路由器来读取
+        // console.log(Taro.getCurrentPages().length)// 能够显示当前页面栈深度，如果使用redirect重定向过来的，大概率就是1，这里前面是navigateto过来，所以是2
+        // console.log(Taro.getCurrentInstance().router.params)// 前面跳转可以携带params参数，这边通过router路由器来读取
         let decodedUrl = decodeURIComponent(Taro.getCurrentInstance().router.params.url)
-        console.log('完整URL',decodedUrl);
+        // console.log('完整URL',decodedUrl);
         setWebViewUrl(decodedUrl)
     }, [])
     // function goback() {
@@ -31,7 +31,7 @@ const Hot = forwardRef((props, ref) => {
     //         url: '/pages/me/me'
     //     })
     // }
-    function handleMessage () {}
+    function handleMessage() { }
     return (
         // <View className='hot' ref={ref}>
         //     热点详情
@@ -40,7 +40,7 @@ const Hot = forwardRef((props, ref) => {
         // </View>
         // 处理url，如果直接传像“？”这类特殊字符会导致解析出问题，因此使用encodeURIComponent编码后传过来，再用decodeURIComponent解码使用
         // webview会占满屏幕，因此不能return其他内容
-        <WebView src={webViewUrl}  onMessage={handleMessage}/>
+        <WebView src={webViewUrl} onMessage={handleMessage} />
     )
 })
 
