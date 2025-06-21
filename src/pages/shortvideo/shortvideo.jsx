@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useRef } from 'react';
 import { View, Text, Button, Video, Icon } from '@tarojs/components'
 import { useState, useEffect } from 'react';
 import { AtTag, AtButton, AtMessage, AtIcon } from 'taro-ui'
@@ -10,7 +10,7 @@ import { inject, observer } from 'mobx-react';
 
 const ShortVideo = forwardRef(({ videoStore }, ref) => {
     const [videosrc, setVideoSrc] = useState(''); // 设置视频播放链接
-    const [fromOhter,setFromOhter] = useState(false); // 设置信号，判断是不是从浏览历史、点赞、收藏页面过来的 
+    const [fromOhter, setFromOhter] = useState(false); // 设置信号，判断是不是从浏览历史、点赞、收藏页面过来的 
     // const location = useLocation();
     useEffect(() => {
         console.log('Page loaded');
@@ -19,11 +19,11 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
         let clickUrl = videoStore.getClickUrl();
         // console.log(clickUrl);
         // 在前面的historyVideo讲过，不能给回调直接套上异步，应该内部写立即执行异步函数
-        (async ()=>{
+        (async () => {
             if (clickUrl) {
                 setFromOhter(true)
                 Taro.atMessage({
-                    message:'浏览历史视频中，点底部中间按钮则返回，观看其他视频则退出历史',
+                    message: '浏览历史视频中，点底部中间按钮则返回，观看其他视频则退出历史',
                 })
                 res = await videoStore.getNext()
             } else {
@@ -34,7 +34,7 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
             // console.log(res)
             setVideoSrc(res)
         })();
-        
+
     }, [videoStore.getClickUrl()])
 
 
@@ -56,13 +56,23 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
     }
 
     async function exitOhter() {
-        Taro.navigateTo({
-            url:'/pages/historyVideo/historyVideo'
-        })
-        // 弄个定时器缓冲一下，因为跳转需要时间，如果没有缓冲，会先看到渲染效果，观感不好
-        setTimeout(()=>{
-            videoStore.clearClickUrl(); // 如预期所想，清空会重新渲染
-        },1000)
+        videoStore.clearClickUrl(); // 如预期所想，清空会重新渲染
+        // 弄个定时器缓冲一下，因为重新渲染后，由于video的设置视频会自动播放，因此可能出现到历史记录还有视频播放的声音
+        // 又因为taro的video没有或者说很难暂停，常规的ref和查到的方法都使用过，没能暂停video，
+        // 因此转而利用切换页面自动暂停的api来避免回到历史记录还有视频播放的声音
+        // 而想要利用这个api，就只有让视频先播放再跳转，才能利用它切换页面暂停视频，因此用了定时器缓冲
+        setTimeout(() => {
+            Taro.switchTab({
+                url: '/pages/me/me'
+            })
+            Taro.navigateTo({
+                url: '/pages/historyVideo/historyVideo'
+            })
+        }, 300)
+    }
+
+    async function updateLikes(signal) {
+        const res = await videoStore.updateLikes(signal)
     }
 
     return (
@@ -84,11 +94,16 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
             />
             <View className='ButtonArea'>
                 <Button className='videoButton' onClick={getPrev}><AtIcon value='chevron-left' size='24' color='#6190E8' /></Button>
-                <Button className='videoButton'><AtIcon value='heart-2' size='24' color='#6190E8' /></Button>
+                {
+                    videoStore.likeSignal
+                        ? <Button className='videoButton' onClick={() => updateLikes(0)}><AtIcon value='heart-2' size='24' color='#6190E8' /></Button>
+                        : <Button className='videoButton' onClick={() => updateLikes(1)}><AtIcon value='heart' size='24' color='#6190E8' /></Button>
+                }
+                {/* <Button className='videoButton' onClick={() => updateLikes(1)}><AtIcon value='heart' size='24' color='#6190E8' /></Button> */}
                 {
                     fromOhter
-                    ?<Button className='videoButton' onClick={exitOhter}>退出</Button>
-                    :null
+                        ? <Button className='videoButton' onClick={exitOhter}>退出</Button>
+                        : null
                 }
                 <Button className='videoButton'><AtIcon value='star-2' size='24' color='#6190E8' /></Button>
                 <Button className='videoButton' onClick={getNext}><AtIcon value='chevron-right' size='24' color='#6190E8' /></Button>

@@ -31,6 +31,13 @@ const Study = forwardRef((props, ref) => {
                     // })
                     setWebViewUrl(res.data.data.res)
                     setNeedAuth(false)
+                } else if (res.data.code === 401) {
+                    // 这里是有token才能发送的请求，如果不对，那大概率就是token过期，需要重新获取，移除token可以避免重复401请求
+                    Taro.atMessage({
+                        'message': '登录状态失效，请重新登录',
+                        'type': 'error',
+                    })
+                    Taro.removeStorageSync('token')
                 } else {
                     console.log('请求出错')
                 }

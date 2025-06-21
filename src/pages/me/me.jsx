@@ -1,7 +1,7 @@
 import React, { forwardRef, useRef } from 'react';
 import { View, Text, Button, Input, Image } from '@tarojs/components'
 import { useState, useEffect, useCallback } from 'react';
-import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction, AtAvatar, AtDrawer, AtGrid } from 'taro-ui'
+import { AtTag, AtButton, AtModal, AtModalHeader, AtModalContent, AtModalAction, AtAvatar, AtDrawer, AtGrid, AtMessage } from 'taro-ui'
 import Taro from '@tarojs/taro';
 import './me.scss'
 import { inject, observer } from 'mobx-react';
@@ -38,17 +38,28 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
             // 有token说明登陆过，可以自动登录
             let autoLoginResult = await userStore.autoLogin(token);
             // console.log(autoLoginResult.data);
-            setUserAvatarUrl(autoLoginResult.data.data.userAvatarUrl)
-            setUserName(autoLoginResult.data.data.userName)
-            // 把更新抽屉中的头像和昵称也一起设置，注意这里不能用setUserNameTemp(userName)，异步执行会导致出问题
-            setUserAvatarUrlTemp(autoLoginResult.data.data.userAvatarUrl)
-            setUserNameTemp(autoLoginResult.data.data.userName)
-            // 记得显示内容就得切换为权限页面了
-            if (loginRef.current) {
-                loginRef.current.removeEventListener('tap', OpenModal)
-                console.log('移除成功')
+            if (autoLoginResult.data.code === 200) {
+                setUserAvatarUrl(autoLoginResult.data.data.userAvatarUrl)
+                setUserName(autoLoginResult.data.data.userName)
+                // 把更新抽屉中的头像和昵称也一起设置，注意这里不能用setUserNameTemp(userName)，异步执行会导致出问题
+                setUserAvatarUrlTemp(autoLoginResult.data.data.userAvatarUrl)
+                setUserNameTemp(autoLoginResult.data.data.userName)
+                // 记得显示内容就得切换为权限页面了
+                if (loginRef.current) {
+                    loginRef.current.removeEventListener('tap', OpenModal)
+                    console.log('移除成功')
+                }
+                setNeedAuth(false);
+            } else {
+                // 如果自动登录失败，说明token过期，那么应该重新登陆
+                exitLogin()
+                console.log(autoLoginResult.data.msg)
+                Taro.atMessage({
+                    // message: '登录状态失效，请重新登录',
+                    message: autoLoginResult.data.msg,
+                    type: 'error'
+                })
             }
-            setNeedAuth(false);
         }
 
         // 写完每次都发现返回res.authSetting['scope.userInfo']为true，经查看微信官方文档，现在已经不适用这些api获取信息了，
@@ -229,12 +240,12 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
     }
 
     async function getHistory() {
-            let res = await videoStore.getHistory();
-            console.log(res)
-            Taro.navigateTo({
-                url: `/pages/historyVideo/historyVideo`,
-                // url: `/pages/like/like`,
-            })
+        let res = await videoStore.getHistory();
+        console.log(res)
+        Taro.navigateTo({
+            url: `/pages/historyVideo/historyVideo`,
+            // url: `/pages/like/like`,
+        })
     }
 
     return (
@@ -242,6 +253,7 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
             {/* <AtTag type='primary' circle active>标签2</AtTag>
             <AtButton type='primary'>按钮文案</AtButton> */}
             {/* <Button open-type='getUserProfile' onGetUserProfile={getUserProfile}>授权登录</Button> */}
+            <AtMessage />
             <View ref={loginRef} onClick={OpenModal}>
                 {
                     needAuth

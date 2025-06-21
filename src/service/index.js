@@ -82,7 +82,14 @@ const service = {
             url: 'http://127.0.0.1:7002/api/v1/clearHistory',
             data: { token }
         })
-    }
+    },
+    // 更新点赞记录
+    updateLikes(params){
+        return httpService.post({
+            url: 'http://127.0.0.1:7002/api/v1/updateLikes',
+            data: params
+        })
+    },
 }
 
 export default service;
