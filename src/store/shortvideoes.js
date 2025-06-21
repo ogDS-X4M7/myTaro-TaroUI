@@ -2,13 +2,14 @@ import { observable, runInAction } from "mobx";
 import service from "../service";
 import Taro from "@tarojs/taro";
 // 如果是体验服版本，就不要获取token，也不要定时器定时更新历史记录
-const token = Taro.getStorageSync('token')
+const originToken = Taro.getStorageSync('token') // 获取初始token
 const videoStore = observable({
     videoes: [],
     index: 0,
     timer: null,
     history: [],
     clickUrl: '',
+    token: originToken, // 先初始化，后续登录、退出登录都对这个token进行操作
     async getVideoes() {
         try {
             const result = await service.shortVideo();
@@ -19,10 +20,12 @@ const videoStore = observable({
                     this.videoes = [...this.videoes, result.data.data]
                 });
                 this.index++;
-                clearTimeout(this.timer)
-                this.timer = setTimeout(() => {
-                    this.updateHistory({ token, history: this.videoes[this.index - 1] })
-                }, 5000)
+                if(this.token){
+                    clearTimeout(this.timer)
+                    this.timer = setTimeout(() => {
+                        this.updateHistory({ token:this.token, history: this.videoes[this.index - 1] })
+                    }, 500)
+                }
                 return result.data.data;
             }
             return result.data.msg; // 因为其他原因没能获取数据，则返回原因
@@ -32,11 +35,13 @@ const videoStore = observable({
     },
     async getNext() {
         if (this.index < this.videoes.length) {
-            this.index++;
-            clearTimeout(this.timer)
-            this.timer = setTimeout(() => {
-                this.updateHistory({ token, history: this.videoes[this.index - 1] })
-            }, 5000)
+            this.index++; 
+            if(this.token){
+                clearTimeout(this.timer)
+                this.timer = setTimeout(() => {
+                    this.updateHistory({ token:this.token, history: this.videoes[this.index - 1] })
+                }, 500)
+            }
             return this.videoes[this.index - 1];
         } else {
             return this.getVideoes();
@@ -45,27 +50,37 @@ const videoStore = observable({
     async getPrev() {
         if (this.index > 0) {
             this.index--;
-            // 每次看新视频都要清空计时，看的时间不满5秒不计入历史记录
-            clearTimeout(this.timer)
-            this.timer = setTimeout(() => {
-                this.updateHistory({ token, history: this.videoes[this.index - 1] })
-            }, 5000)
+            if(this.token){
+                // 每次看新视频都要清空计时，看的时间不满5秒不计入历史记录
+                clearTimeout(this.timer)
+                this.timer = setTimeout(() => {
+                    this.updateHistory({ token:this.token, history: this.videoes[this.index - 1] })
+                }, 500)
+            }
             return this.videoes[this.index - 1];
         } else {
             return null
         }
     },
+    // 更新历史记录-现在也许应该叫新增
     async updateHistory(params) {
         const res = await service.updateHistory(params)
         return res;
     },
-    async getHistory(token) {
-        const res = await service.getHistory(token)
+    async getHistory() {
+        const res = await service.getHistory(this.token)
         // console.log(res)
         if (res.data.code === 200) {
-            this.history = res.data.data.res.reverse(); // 倒序实现时间后的先显示
+            this.history = res.data.data.res; // 倒序实现时间后的先显示
+            this.history = this.history.reverse();
         }
         return res.data.msg
+    },
+    // 清空历史记录
+    async clearHistory(){
+        this.history = [];
+        const res = await service.clearHistory(this.token)
+        return res.data
     },
     // 播放历史记录中被点击查看的视频
     async playHistory(historyUrl) {
@@ -78,7 +93,20 @@ const videoStore = observable({
         this.index = this.videoes.length - 1;
         // 外部会导向播放页面，并且之前设置的就是自动播放
         return true
-    }
+    },
+    // 外部获取clickUrl的方法
+    getClickUrl(){
+        return this.clickUrl;
+    },
+    // 外部清空clickUrl的方法，表示退出历史模式
+    clearClickUrl(){
+        this.clickUrl = '';
+    },
+    // 外部更新token的方法，实时确保token状态以应对是否进行更新浏览历史的判断
+    updateToken(token){
+        this.token = token;
+    },
+    
 
 })
 

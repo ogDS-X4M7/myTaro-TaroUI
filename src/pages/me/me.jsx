@@ -108,6 +108,8 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
                 const user = await userStore.wxLogin(loginres.code);
                 // console.log(user)
                 // console.log(user.data)
+                // 同时更新视频仓库中的token；
+                videoStore.updateToken(user.data.data.token)
                 setUserAvatarUrl(user.data.data.avatarUrl)
                 setUserName(user.data.data.userName)
                 // 把更新抽屉中的头像和昵称也一起设置，注意这里不能用setUserNameTemp(userName)，异步执行会导致出问题
@@ -207,7 +209,7 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
     function handleGridClick(item, index) {
         // console.log('点击了宫格:', item.value, '索引:', index);
         switch (item.value) {
-            case '我赞过的':
+            case '我点赞的':
                 // 后续填写
                 break;
             case '我的收藏':
@@ -227,17 +229,12 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
     }
 
     async function getHistory() {
-        token = Taro.getStorageSync('token')
-        if (token) {
-            let res = await videoStore.getHistory(token);
+            let res = await videoStore.getHistory();
             console.log(res)
             Taro.navigateTo({
                 url: `/pages/historyVideo/historyVideo`,
-
+                // url: `/pages/like/like`,
             })
-        } else {
-            console.log('状态异常，请重新登陆')
-        }
     }
 
     return (
@@ -340,7 +337,7 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
                                 [
                                     {
                                         image: require('../../assets/images/like.png'),
-                                        value: '我赞过的'
+                                        value: '我点赞的'
                                     },
                                     {
                                         image: require('../../assets/images/collection.png'),

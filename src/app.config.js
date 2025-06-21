@@ -5,7 +5,8 @@ export default defineAppConfig({
     'pages/hot/hot',
     'pages/study/study',
     'pages/shortvideo/shortvideo',
-    'pages/historyVideo/historyVideo'
+    'pages/historyVideo/historyVideo',
+    'pages/like/like',
   ],
   window: {
     backgroundTextStyle: 'light',

@@ -18,35 +18,35 @@ const Study = forwardRef((props, ref) => {
 
     function handleMessage() { }
     async function tryEnter() {
-        // const token = Taro.getStorageSync('token')
-        // // console.log(token);
-        // // 有token再发请求，不然taro框架内部的文件发现请求失败就要在控制台报错，虽然不影响功能，但不美观
-        // if (token) {
-        //     try {
-        //         const res = await service.study();
-        //         if (res.data.code === 200) {
-        //             // Taro.atMessage({
-        //             //     'message': '获取数据成功',
-        //             //     'type': '',
-        //             // })
-        //             setWebViewUrl(res.data.data.res)
-        //             setNeedAuth(false)
-        //         } else {
-        //             console.log('请求出错')
-        //         }
-        //     } catch (err) {
-        //         return err
-        //     }
-        // } else {
-        //     Taro.atMessage({
-        //         'message': '请先登录',
-        //         'type': 'error',
-        //     })
-        // }
+        const token = Taro.getStorageSync('token')
+        // console.log(token);
+        // 有token再发请求，不然taro框架内部的文件发现请求失败就要在控制台报错，虽然不影响功能，但不美观
+        if (token) {
+            try {
+                const res = await service.study();
+                if (res.data.code === 200) {
+                    // Taro.atMessage({
+                    //     'message': '获取数据成功',
+                    //     'type': '',
+                    // })
+                    setWebViewUrl(res.data.data.res)
+                    setNeedAuth(false)
+                } else {
+                    console.log('请求出错')
+                }
+            } catch (err) {
+                return err
+            }
+        } else {
+            Taro.atMessage({
+                'message': '请先登录',
+                'type': 'error',
+            })
+        }
 
         // 下面附一个免请求版本，让体验服不受登录的干扰，切换时把上面的都注释掉换成下面即可
-        setWebViewUrl('https://ogds-x4m7.github.io/InternshipGain/')
-        setNeedAuth(false)
+        // setWebViewUrl('https://ogds-x4m7.github.io/InternshipGain/')
+        // setNeedAuth(false)
     }
     return (
         <View>

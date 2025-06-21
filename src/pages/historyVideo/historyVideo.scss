@@ -1,8 +1,38 @@
 .historybox {
     display: flex;
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
 
     .videobox {
         width: 20vw;
         height: 20vh;
     }
+
+    // .videoTitle {
+    //     display: flex;
+    //     flex-direction: column;
+    //     justify-content: center; 
+    //     // margin: 20px auto;
+    //     margin-left: 20px;
+    //     font:normal 700 26px/26px 'Microsoft Yahei';
+    // }
+    .textContent {
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
+        // margin: 20px auto;
+        margin-left: 20px;
+        .videoTitle {
+            font:normal 700 36px/36px 'Microsoft Yahei';
+        }
+        .videoUpper {
+            margin:20px 0;
+            font:normal 400 26px/26px 'Microsoft Yahei';
+        }
+    }
+}
+
+.nohistory {
+    text-align: center;
+    padding: 40px;
 }
