@@ -19,15 +19,17 @@
     .textContent {
         display: flex;
         flex-direction: column;
-        justify-content: center; 
+        justify-content: center;
         // margin: 20px auto;
         margin-left: 20px;
+
         .videoTitle {
-            font:normal 700 36px/36px 'Microsoft Yahei';
+            font: normal 700 36px/36px 'Microsoft Yahei';
         }
+
         .videoUpper {
-            margin:20px 0;
-            font:normal 400 26px/26px 'Microsoft Yahei';
+            margin: 20px 0;
+            font: normal 400 26px/26px 'Microsoft Yahei';
         }
     }
 }
@@ -35,4 +37,12 @@
 .nohistory {
     text-align: center;
     padding: 40px;
+}
+
+
+.historyVideoTitle {
+    // margin: 20px auto;
+    padding: 10px;
+    text-align: center;
+    background: linear-gradient(to right, #b3d1ec, #f7f5f5);
 }

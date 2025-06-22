@@ -24,7 +24,7 @@ const HistoryVideo = forwardRef(({ videoStore }, ref) => {
     // 如果实在需要异步,那也应该在回调内部写async,而不能让回调成为async
     // 这里再详解一下useEffect：
     useEffect(() => {
-        console.log('Page loaded')
+        // console.log('Page loaded')
         let fromSignal = Taro.getCurrentInstance().router.params.fromSignal;
         // 参数fromSignal从个人页面点击进入时传入,因为是navigate链接的params参数，因此通过如上方式从路由里获取
         setFromSignal(fromSignal);
@@ -60,12 +60,12 @@ const HistoryVideo = forwardRef(({ videoStore }, ref) => {
             {
                 fromSignal === '0'
                     ? <View>
-                        <View>浏览历史</View>
+                        <View className='historyVideoTitle'>浏览历史</View>
                         <AtButton onClick={clearHistory} >清空浏览历史记录</AtButton>
                     </View>
                     : fromSignal === '1'
-                        ? <View>我的点赞</View>
-                        : <View>我的收藏</View>
+                        ? <View className='historyVideoTitle'>我的点赞</View>
+                        : <View className='historyVideoTitle'>我的收藏</View>
             }
             {
                 videoList.length

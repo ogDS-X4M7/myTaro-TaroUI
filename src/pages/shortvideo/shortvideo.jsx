@@ -1,7 +1,7 @@
 import React, { forwardRef, useRef } from 'react';
 import { View, Text, Button, Video, Icon } from '@tarojs/components'
 import { useState, useEffect } from 'react';
-import { AtTag, AtButton, AtMessage, AtIcon } from 'taro-ui'
+import { AtTag, AtButton, AtMessage, AtIcon, AtToast } from 'taro-ui'
 import Taro from '@tarojs/taro';
 import './shortvideo.scss'
 import { inject, observer } from 'mobx-react';
@@ -11,10 +11,17 @@ import { inject, observer } from 'mobx-react';
 const ShortVideo = forwardRef(({ videoStore }, ref) => {
     const [videosrc, setVideoSrc] = useState(''); // 设置视频播放链接
     const [fromOhter, setFromOhter] = useState(false); // 设置信号，判断是不是从浏览历史、点赞、收藏页面过来的 
+    const [likeOpened, setLikeOpened] = useState(false) // 点赞成功显示信号
+    const [unlikeOpened, setUnlikeOpened] = useState(false) // 点赞取消显示信号
+    const [collectOpened, setCollectOpened] = useState(false) // 收藏成功显示信号
+    const [uncollectOpened, setUncollectOpened] = useState(false) // 收藏取消显示信号
+    const [likeThrottle, setLikeThrottle] = useState(false) // 点赞节流信号
+    const [collectThrottle, setCollectThrottle] = useState(false) // 收藏节流信号
+    // Throttle
 
     // const location = useLocation();
     useEffect(() => {
-        console.log('Page loaded');
+        // console.log('Page loaded');
         let res = '';
         // 点击传递播放视频的方法里同时设置了clickUrl，如果有就说明是从历史记录点击过来的，没有就是自然观看
         let clickUrl = videoStore.getClickUrl();
@@ -83,16 +90,61 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
     }
 
     async function updateLikes(signal) {
-        const res = await videoStore.updateLikes(signal)
+        if (!likeThrottle) {
+            setLikeThrottle(true)
+            const res = await videoStore.updateLikes(signal)
+            if (signal === 1) {
+                setLikeOpened(true)
+                setTimeout(() => {
+                    setLikeOpened(false)
+                }, 1000)
+            } else {
+                setUnlikeOpened(true)
+                setTimeout(() => {
+                    setUnlikeOpened(false)
+                }, 1000)
+            }
+            setLikeThrottle(false);
+        } else {
+            Taro.atMessage({
+                message: '操作过快，请稍后重试',
+                type: 'info'
+            })
+        }
+
     }
 
     async function updateCollections(signal) {
-        const res = await videoStore.updateCollections(signal)
+        if (!collectThrottle) {
+            setCollectThrottle(true)
+            const res = await videoStore.updateCollections(signal)
+            if (signal === 1) {
+                setCollectOpened(true)
+                setTimeout(() => {
+                    setCollectOpened(false)
+                }, 1000)
+            } else {
+                setUncollectOpened(true)
+                setTimeout(() => {
+                    setUncollectOpened(false)
+                }, 1000)
+            }
+            setCollectThrottle(false)
+        } else {
+            Taro.atMessage({
+                message: '操作过快，请稍后重试',
+                type: 'info'
+            })
+        }
     }
 
     return (
         <View style={{ textAlign: 'center' }}>
             <AtMessage />
+            <AtToast isOpened={likeOpened} text="点赞成功" duration={500}></AtToast>
+            <AtToast isOpened={unlikeOpened} text="取消点赞" duration={500}></AtToast>
+            <AtToast isOpened={collectOpened} text="收藏成功" duration={500}></AtToast>
+            <AtToast isOpened={uncollectOpened} text="取消收藏" duration={500}></AtToast>
             <Video
                 className='videobox'
                 id='video'
@@ -117,7 +169,7 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
                 {/* <Button className='videoButton' onClick={() => updateLikes(1)}><AtIcon value='heart' size='24' color='#6190E8' /></Button> */}
                 {
                     fromOhter
-                        ? <Button className='videoButton' onClick={exitOhter}>退出</Button>
+                        ? <Button className='exitButton' onClick={exitOhter}><AtIcon value='close' size='24' color='#dc1717' /></Button>
                         : null
                 }
                 {

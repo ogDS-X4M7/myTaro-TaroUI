@@ -22,4 +22,20 @@
         font-size: 30px;
         background: #d5e2ee;
     }
+
+    .exitButton {
+        flex: 1;
+        height: 6vh;
+        font-size: 30px;
+        // background: linear-gradient(to right, #ecb3b3, #f7f5f5);#e43a3a #dc1717
+        background: linear-gradient(to right, #e43a3a, #f7f5f5);
+        border-color: #ecb3b3;
+    }
+
+    .videoButton:active {
+        flex: 1;
+        height: 6vh;
+        font-size: 30px;
+        background: #ecb3b3;
+    }
 }
