@@ -11,6 +11,7 @@ import { inject, observer } from 'mobx-react';
 const ShortVideo = forwardRef(({ videoStore }, ref) => {
     const [videosrc, setVideoSrc] = useState(''); // 设置视频播放链接
     const [fromOhter, setFromOhter] = useState(false); // 设置信号，判断是不是从浏览历史、点赞、收藏页面过来的 
+
     // const location = useLocation();
     useEffect(() => {
         console.log('Page loaded');
@@ -27,7 +28,6 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
                 })
                 res = await videoStore.getNext()
             } else {
-                console.log(clickUrl)
                 setFromOhter(false)
                 res = await videoStore.getVideoes()
             }
@@ -65,14 +65,29 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
             Taro.switchTab({
                 url: '/pages/me/me'
             })
-            Taro.navigateTo({
-                url: '/pages/historyVideo/historyVideo'
-            })
+            // 退出时根据信号返回对应的页面
+            if (videoStore.fromSignal === '0') {
+                Taro.navigateTo({
+                    url: '/pages/historyVideo/historyVideo?fromSignal=0'
+                })
+            } else if (videoStore.fromSignal === '1') {
+                Taro.navigateTo({
+                    url: '/pages/historyVideo/historyVideo?fromSignal=1'
+                })
+            } else {
+                Taro.navigateTo({
+                    url: '/pages/historyVideo/historyVideo?fromSignal=2'
+                })
+            }
         }, 300)
     }
 
     async function updateLikes(signal) {
         const res = await videoStore.updateLikes(signal)
+    }
+
+    async function updateCollections(signal) {
+        const res = await videoStore.updateCollections(signal)
     }
 
     return (
@@ -105,7 +120,12 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
                         ? <Button className='videoButton' onClick={exitOhter}>退出</Button>
                         : null
                 }
-                <Button className='videoButton'><AtIcon value='star-2' size='24' color='#6190E8' /></Button>
+                {
+                    videoStore.collectionSignal
+                        ? <Button className='videoButton' onClick={() => updateCollections(0)}><AtIcon value='star-2' size='24' color='#6190E8' /></Button>
+                        : <Button className='videoButton' onClick={() => updateCollections(1)}><AtIcon value='star' size='24' color='#6190E8' /></Button>
+                }
+
                 <Button className='videoButton' onClick={getNext}><AtIcon value='chevron-right' size='24' color='#6190E8' /></Button>
             </View>
         </View>

@@ -84,10 +84,31 @@ const service = {
         })
     },
     // 更新点赞记录
-    updateLikes(params){
+    updateLikes(params) {
         return httpService.post({
             url: 'http://127.0.0.1:7002/api/v1/updateLikes',
             data: params
+        })
+    },
+    // 获取点赞记录
+    getLikes(token) {
+        return httpService.post({
+            url: 'http://127.0.0.1:7002/api/v1/getLikes',
+            data: { token }
+        })
+    },
+    // 更新收藏
+    updateCollections(params) {
+        return httpService.post({
+            url: 'http://127.0.0.1:7002/api/v1/updateCollections',
+            data: params
+        })
+    },
+    // 获取收藏
+    getCollections(token) {
+        return httpService.post({
+            url: 'http://127.0.0.1:7002/api/v1/getCollections',
+            data: { token }
         })
     },
 }

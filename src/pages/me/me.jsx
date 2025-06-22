@@ -120,7 +120,9 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
                 // console.log(user)
                 // console.log(user.data)
                 // 同时更新视频仓库中的token；
-                videoStore.updateToken(user.data.data.token)
+                await videoStore.updateToken(user.data.data.token)
+                // 同时获取用户的收藏
+                videoStore.getCollections()
                 setUserAvatarUrl(user.data.data.avatarUrl)
                 setUserName(user.data.data.userName)
                 // 把更新抽屉中的头像和昵称也一起设置，注意这里不能用setUserNameTemp(userName)，异步执行会导致出问题
@@ -221,9 +223,10 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
         // console.log('点击了宫格:', item.value, '索引:', index);
         switch (item.value) {
             case '我点赞的':
-                // 后续填写
+                getLikes()
                 break;
             case '我的收藏':
+                getCollections();
                 break;
             case '浏览历史':
                 getHistory()
@@ -243,8 +246,23 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
         let res = await videoStore.getHistory();
         console.log(res)
         Taro.navigateTo({
-            url: `/pages/historyVideo/historyVideo`,
-            // url: `/pages/like/like`,
+            url: `/pages/historyVideo/historyVideo?fromSignal=0`,
+        })
+    }
+
+    async function getLikes() {
+        let res = await videoStore.getLikes();
+        console.log(res)
+        Taro.navigateTo({
+            url: `/pages/historyVideo/historyVideo?fromSignal=1`,
+        })
+    }
+
+    async function getCollections() {
+        let res = await videoStore.getCollections();
+        console.log(res)
+        Taro.navigateTo({
+            url: `/pages/historyVideo/historyVideo?fromSignal=2`,
         })
     }
 

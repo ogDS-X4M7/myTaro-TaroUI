@@ -10,7 +10,7 @@ import HotItem from '../../components/HotItem/HotItem';
 import { inject, observer } from 'mobx-react';
 
 
-const Index = forwardRef(({ counterStore, hotStore }, ref) => {
+const Index = forwardRef(({ counterStore, hotStore, videoStore }, ref) => {
   // useLoad(() => {
   //   console.log('Page loaded.')
   // })
@@ -29,6 +29,7 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   // }
   const [hotsFlag, setHotsFlag] = useState(false); // 热点获取状态，避免重复获取
   const [current, setCurrent] = useState(0); // 标签页页数状态 
+  const [firstPlay, setFirstPlay] = useState(true); //设置信号，进入页面就应该尝试获取收藏，如果未登录可能获取不到，所以登录后也得获取一次
   let token = Taro.getStorageSync('token')
   const fetchData = async () => {
     if (hotsFlag) {
@@ -110,6 +111,15 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   }
   useEffect(() => {
     console.log('Page loaded')
+    if (token) {
+      // 有token才请求，避免401
+      // 非常重要的一点，因为collections必须严格校验，因此进入小程序就应该获取collections
+      // 当然这里是做一个防自动登录的请求，后面token失效，需要手动登录的也要额外安排获取收藏的操作
+      if (firstPlay) {
+        videoStore.getCollections();
+        setFirstPlay(false)
+      }
+    }
   }, [])
   return (
     <View className='index' ref={ref}>
@@ -220,6 +230,6 @@ const Index = forwardRef(({ counterStore, hotStore }, ref) => {
   )
 })
 
-export default inject('counterStore', 'hotStore', 'userStore')(observer(Index))
+export default inject('counterStore', 'hotStore', 'videoStore')(observer(Index))
 // observable 是用来创建 / 转换状态数据的，不能直接包装组件,将普通对象、数组或类转换为可观察对象。
 // observer 是 MobX 提供的高阶组件，用于将 React 组件转换为响应式组件。
