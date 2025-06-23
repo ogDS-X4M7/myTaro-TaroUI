@@ -111,6 +111,17 @@ const service = {
             data: { token }
         })
     },
+    // 获取天气预报
+    getWeathers(city){
+        return httpService.get({
+            url: `https://v2.xxapi.cn/api/weather?city=${city}`,
+        })
+    },
+    getEverydayEnglish(){
+        return httpService.get({
+            url:'https://v2.xxapi.cn/api/randomenglishwords'
+        })
+    }
 }
 
 export default service;

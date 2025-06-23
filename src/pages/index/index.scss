@@ -1,0 +1,55 @@
+.weatherReport {
+    text-align:center;
+    background: linear-gradient(to bottom right, #b3d1ec, #f7f5f5);
+    // height: auto;
+    min-height: 93.9vh;
+    .weatherTop {
+        font: normal 400 34px/34px 'Microsoft Yahei';
+        padding:30px;
+        background: rgba(0,0,0,.1);
+    }
+    
+    .weatherToday {
+        padding: 10vh 0 15vh 0;
+        .temperToday {
+            margin: 30px;
+            font: normal 400 90px/90px 'Microsoft Yahei';
+            color:#666
+        }
+        .weatherTagArea {
+            .Air {
+                margin: 0 10px;
+            }
+        }
+    }
+
+    .weatherList {
+        // padding: 40px 0; // 不能使用padding因为后续要让今天的天气项目增加强调显示
+        border-radius: 50px;
+        background: rgba(0,0,0,.05);
+        font: normal 400 2vh/2vh 'Microsoft Yahei';
+        color: #333;
+        .Swiper{
+            height: 24vh;
+            .ListItem {
+                margin-top: 2vh;
+            }
+            .airTag {
+                background: linear-gradient(to bottom right, #b3d1ec, #f7f5f5)!important;
+                // background-color: #000;
+                // margin-bottom: 2vh !important;
+            }
+            .swiperItemToday {
+                border-radius: 50px;
+                // background: rgba(255,255,255,.2);
+                background: rgba(0,0,0,.05);
+            }
+        }
+    }
+
+    .weatherBottom {
+        margin: 2vh 0;
+        font-size: 26px;
+        color:#666;
+    }
+}

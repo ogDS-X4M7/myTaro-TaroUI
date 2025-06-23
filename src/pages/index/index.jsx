@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
 import Taro from '@tarojs/taro';
-import { View, Text, Button, Video, Image } from '@tarojs/components'
+import { View, Text, Button, Video, Image, Swiper, SwiperItem } from '@tarojs/components'
 import { useState, useEffect } from 'react';
-import { AtTag, AtButton, AtMessage, AtTabs, AtTabsPane } from 'taro-ui'
+import { AtTag, AtButton, AtMessage, AtTabs, AtTabsPane, AtSearchBar, AtToast } from 'taro-ui'
 // import { useLoad } from '@tarojs/taro'
 import './index.scss'
 // import Item from '../../components/classComponent/classComponent';
@@ -10,7 +10,7 @@ import HotItem from '../../components/HotItem/HotItem';
 import { inject, observer } from 'mobx-react';
 
 
-const Index = forwardRef(({ counterStore, hotStore, videoStore }, ref) => {
+const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, EnglishStore }, ref) => {
   // useLoad(() => {
   //   console.log('Page loaded.')
   // })
@@ -29,8 +29,13 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore }, ref) => {
   // }
   const [hotsFlag, setHotsFlag] = useState(false); // 热点获取状态，避免重复获取
   const [current, setCurrent] = useState(0); // 标签页页数状态 
-  const [firstPlay, setFirstPlay] = useState(true); //设置信号，进入页面就应该尝试获取收藏，如果未登录可能获取不到，所以登录后也得获取一次
+  const [firstEnter, setFirstEnter] = useState(true); //设置首次进入页面信号，首次进入就应尝试获取收藏-防自动登录；如果未登录可能获取不到，所以登录后也得获取一次；
+  const [city,setCity] = useState(''); // 设置天气搜索 市/区 的名字
+  const [successCity,setSuccessCity] = useState('') // 记录最后一次成功请求的城市名，可用于设置默认市/区，上面的city绑定了搜索栏所以不适合承担这个任务
+  const [toastOpen,setToastOpen] = useState(false) // 轻提示开关信号，提示默认城市设置的成功
+  const [englishTip,setEnglishTip] = useState(false) // 每日英语获取信号，获取过则为true，未获取则为false--显示提示
   let token = Taro.getStorageSync('token')
+  let defaultCity = Taro.getStorageSync('defaultCity') // 开始就要获取，和token一样，token判断获取收藏，defaultCity判断获取天气
   const fetchData = async () => {
     if (hotsFlag) {
       Taro.atMessage({
@@ -104,38 +109,79 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore }, ref) => {
     // console.log(hot.id)
   }
 
-
+  // 切换标签页
   function handleTabs(value) {
     // console.log(value)
     setCurrent(value)
   }
+
+  // 实时修改搜索城市
+  function onChange(value){
+    setCity(value)
+  }
+
+  // 搜索城市天气
+  async function onActionClick(){
+    const res = await weatherStore.getWeathers(city);
+    if(res!==true){
+      Taro.atMessage({
+        message:res,
+        type:'error'
+      })
+    }else{
+      setSuccessCity(city) // 请求成功，记录最新的成功请求城市名
+    }
+    console.log(res);
+  }
+
+  // 设置默认市/区存入token
+  async function CityInToken() {
+    Taro.setStorageSync('defaultCity',successCity);
+    setToastOpen(true)
+    setTimeout(()=>{
+      setToastOpen(false)
+    },1000)
+  }
+
+  async function getEverydayEnglish() {
+    const res = await EnglishStore.getEverydayEnglish();
+    if(res===true)setEnglishTip(true)
+  }
+
   useEffect(() => {
     console.log('Page loaded')
     if (token) {
       // 有token才请求，避免401
       // 非常重要的一点，因为collections必须严格校验，因此进入小程序就应该获取collections
       // 当然这里是做一个防自动登录的请求，后面token失效，需要手动登录的也要额外安排获取收藏的操作
-      if (firstPlay) {
+      if (firstEnter) {
         videoStore.getCollections();
-        setFirstPlay(false)
+        setFirstEnter(false)
       }
+    }
+    if(defaultCity){
+      setSuccessCity(defaultCity) // 如果有就设置默认市/区并发送请求获取数据
+      const res = weatherStore.getWeathers(defaultCity);
+      console.log(res);
     }
   }, [])
   return (
     <View className='index' ref={ref}>
       <AtMessage />
+      <AtToast isOpened={toastOpen} text="默认市/区设置成功" duration={1000}	></AtToast>
       <AtTabs
         current={current}
         scroll
         tabList={[
           { title: '使用须知' },
-          { title: '热点获取' },
+          { title: '新闻热点' },
           { title: '天气预报' },
           { title: '每日英语' },
           { title: '单词详解' },
           { title: '携程样式' }
         ]}
         onClick={handleTabs}>
+        {/* 使用须知 */}
         <AtTabsPane current={current} index={0}>
           <View className='at-article'>
             <View className='at-article__h1' style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -175,6 +221,7 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore }, ref) => {
             </View>
           </View>
         </AtTabsPane>
+        {/* 新闻热点 */}
         <AtTabsPane current={current} index={1}>
           <View style={{ marginTop: '10px' }}>
             <AtButton type='primary' onClick={fetchData}>获取热点信息</AtButton>
@@ -183,31 +230,132 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore }, ref) => {
             }
           </View>
         </AtTabsPane>
-        {/* <AtTabsPane current={current} index={2}>
-          <View style='text-align:center;'>
-            <Video
-              className='videobox'
-              id='video'
-              src='https://wxsnsdy.tc.qq.com/105/20210/snsdyvideodownload?filekey=30280201010421301f0201690402534804102ca905ce620b1241b726bc41dcff44e00204012882540400&bizid=1023&hy=SH&fileparam=302c020101042530230204136ffd93020457e3c4ff02024ef202031e8d7f02030f42400204045a320a0201000400'
-              // poster='https://misc.aotu.io/booxood/mobile-video/cover_900x500.jpg'
-              initialTime={0}
-              controls={true}
-              autoplay={false}
-              loop={false}
-              muted={false}
-              enablePlayGesture={true}
+        {/* 天气预报 */}
+        <AtTabsPane current={current} index={2} className='weatherReport'>
+          <View>
+            <AtSearchBar
+              inputType='text'
+              placeholder='请输入您要查看的市/区'
+              value={city}
+              onChange={onChange}
+              onActionClick={onActionClick}
             />
+            {
+              weatherStore.weathers.length
+                ?<View>
+                  <View className='weatherTop'>{weatherStore.city}</View>
+                  <View className='weatherToday'>
+                    <View className='temperToday'>
+                      {weatherStore.weathers[1].temperature}
+                    </View>
+                    <View className='weatherTagArea'>
+                      <AtTag className='weatherType' circle >{weatherStore.weathers[1].weather}</AtTag>
+                      <AtTag className='Air' circle >空气{weatherStore.weathers[1].air_quality}</AtTag>
+                      <AtTag className='wind' circle >{weatherStore.weathers[1].wind}</AtTag>
+                    </View>
+                  </View>
+                  <View className='weatherList'>
+                    <Swiper
+                      className='Swiper'
+                      indicatorColor='#999'
+                      indicatorActiveColor='#333'
+                      displayMultipleItems='3'>
+                      {/* 这里不做map操作是为了方便设置昨、今、明的显示，而不是直接显示星期
+                      如果使用map，就必须操作dom才能修改里面的文本内容，把星期改成昨今明，但taro一般不建议操作dom
+                      反正只有6个数据，干脆手动操作更加简单明了 */}
+                      <SwiperItem>
+                        <View className='demo-text-1'>
+                          <View className='ListItem'>昨天</View>
+                          <View className='ListItem'>{weatherStore.weathers[0].weather}</View>
+                          <View className='ListItem'>{weatherStore.weathers[0].temperature}</View>
+                          <View className='ListItem'>{weatherStore.weathers[0].wind}</View>
+                          <AtTag circle className='airTag ListItem'>{weatherStore.weathers[0].air_quality}</AtTag>
+                        </View>
+                      </SwiperItem>
+                      <SwiperItem className='swiperItemToday'>
+                        <View>
+                          <View className='ListItem'>今天</View>
+                          <View className='ListItem'>{weatherStore.weathers[1].weather}</View>
+                          <View className='ListItem'>{weatherStore.weathers[1].temperature}</View>
+                          <View className='ListItem'>{weatherStore.weathers[1].wind}</View>
+                          <AtTag circle className='airTag ListItem'>{weatherStore.weathers[1].air_quality}</AtTag>
+                        </View>
+                      </SwiperItem>
+                      <SwiperItem>
+                        <View className='demo-text-3'>
+                          <View className='ListItem'>明天</View>
+                          <View className='ListItem'>{weatherStore.weathers[2].weather}</View>
+                          <View className='ListItem'>{weatherStore.weathers[2].temperature}</View>
+                          <View className='ListItem'>{weatherStore.weathers[2].wind}</View>
+                          <AtTag circle className='airTag ListItem'>{weatherStore.weathers[2].air_quality}</AtTag>
+                        </View>
+                      </SwiperItem>
+                      <SwiperItem>
+                        <View className='demo-text-4'>
+                          <View className='ListItem'>{weatherStore.weathers[3].date}</View>
+                          <View className='ListItem'>{weatherStore.weathers[3].weather}</View>
+                          <View className='ListItem'>{weatherStore.weathers[3].temperature}</View>
+                          <View className='ListItem'>{weatherStore.weathers[3].wind}</View>
+                          <AtTag circle className='airTag ListItem'>{weatherStore.weathers[3].air_quality}</AtTag>
+                        </View>
+                      </SwiperItem>
+                      <SwiperItem>
+                        <View className='demo-text-5'>
+                          <View className='ListItem'>{weatherStore.weathers[4].date}</View>
+                          <View className='ListItem'>{weatherStore.weathers[4].weather}</View>
+                          <View className='ListItem'>{weatherStore.weathers[4].temperature}</View>
+                          <View className='ListItem'>{weatherStore.weathers[4].wind}</View>
+                          <AtTag circle className='airTag ListItem'>{weatherStore.weathers[4].air_quality}</AtTag>
+                        </View>
+                      </SwiperItem>
+                      <SwiperItem>
+                        <View className='demo-text-6'>
+                          <View className='ListItem'>{weatherStore.weathers[5].date}</View>
+                          <View className='ListItem'>{weatherStore.weathers[5].weather}</View>
+                          <View className='ListItem'>{weatherStore.weathers[5].temperature}</View>
+                          <View className='ListItem'>{weatherStore.weathers[5].wind}</View>
+                          <AtTag circle className='airTag ListItem'>{weatherStore.weathers[5].air_quality}</AtTag>
+                        </View>
+                      </SwiperItem>
+                    </Swiper>
+                  </View>
+                  <View className='weatherBottom'>下方设置默认市/区，以后打开天气预报默认展示该市/区天气</View>
+                  <AtButton circle onClick={CityInToken}>设置为默认市/区</AtButton>
+                </View>
+                :null
+            }
           </View>
-        </AtTabsPane> */}
-        <AtTabsPane current={current} index={2}>
-          <View style='font-size:18px;text-align:center;height:100px;'>天气预报的内容</View>
         </AtTabsPane>
+        {/* 每日英语 */}
         <AtTabsPane current={current} index={3}>
-          <View style='font-size:18px;text-align:center;height:100px;'>每日英语的内容</View>
+          <View style='font-size:18px;text-align:center;'>
+            <AtButton onClick={getEverydayEnglish}>获取每日英语知识</AtButton>
+            {
+              englishTip
+              ?<View>
+                <View className='EnglishWord'>{EnglishStore.word}</View>
+                {
+                  EnglishStore.translations.map((translation)=>{
+                    return(
+                      <View key={translation.id || translation.pos} className='EnglishTranslations'>
+                        <Text className='translationPos'>{translation.pos}</Text>
+                        <Text className='translationTran'>{translation.tran_cn}</Text>
+                      </View>
+                    )
+                  })
+                }
+              </View>
+              :<View className='EnglishTip'>
+                每日英语提供每日经典英语例句、词汇和短语等内容，帮助您进行英语学习，提高语言能力。当然您可以多次点击按钮来学习更多，不过学习知识，质量比数量更重要，请量力而行。
+              </View>
+            }
+          </View>
         </AtTabsPane>
+        {/* 单词详解 */}
         <AtTabsPane current={current} index={4}>
           <View style='font-size:18px;text-align:center;height:100px;'>单词详解的内容</View>
         </AtTabsPane>
+        {/* 携程样式 */}
         <AtTabsPane current={current} index={5}>
           <View style='font-size:18px;text-align:center;height:100px;'>携程样式的内容</View>
         </AtTabsPane>
@@ -230,6 +378,6 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore }, ref) => {
   )
 })
 
-export default inject('counterStore', 'hotStore', 'videoStore')(observer(Index))
+export default inject('counterStore', 'hotStore', 'videoStore', 'weatherStore', 'EnglishStore')(observer(Index))
 // observable 是用来创建 / 转换状态数据的，不能直接包装组件,将普通对象、数组或类转换为可观察对象。
 // observer 是 MobX 提供的高阶组件，用于将 React 组件转换为响应式组件。
