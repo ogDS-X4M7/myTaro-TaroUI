@@ -52,7 +52,7 @@ const Me = forwardRef(({ userStore, videoStore }, ref) => {
                 setNeedAuth(false);
             } else {
                 // 如果自动登录失败，说明token过期，那么应该重新登陆
-                exitLogin()
+                Taro.removeStorageSync('token')
                 console.log(autoLoginResult.data.msg)
                 Taro.atMessage({
                     // message: '登录状态失效，请重新登录',

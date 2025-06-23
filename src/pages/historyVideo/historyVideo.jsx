@@ -29,11 +29,26 @@ const HistoryVideo = forwardRef(({ videoStore }, ref) => {
         // 参数fromSignal从个人页面点击进入时传入,因为是navigate链接的params参数，因此通过如上方式从路由里获取
         setFromSignal(fromSignal);
         if (fromSignal === '0') {
-            setVideoList(videoStore.history)
+            // 初次使用是undefined，不能读取长度，因此要额外设置空数组
+            if(videoStore.history){
+                setVideoList(videoStore.history)
+            }else{
+                setVideoList([])
+            }
         } else if (fromSignal === '1') {
-            setVideoList(videoStore.likes)
+            // 初次使用是undefined，不能读取长度，因此要额外设置空数组
+            if(videoStore.likes){
+                setVideoList(videoStore.likes)
+            }else{
+                setVideoList([])
+            }
         } else {
-            setVideoList(videoStore.collections)
+            // 初次使用是undefined，不能读取长度，因此要额外设置空数组
+            if(videoStore.collections){
+                setVideoList(videoStore.collections)
+            }else{
+                setVideoList([])
+            }
         }
     }, [refresh])
 

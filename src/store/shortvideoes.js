@@ -111,7 +111,7 @@ const videoStore = observable({
         // console.log(res)
         if (res.data.code === 200) {
             this.history = res.data.data.res; // 倒序实现时间后的先显示
-            this.history = this.history.reverse();
+            if(this.history)this.history = this.history.reverse();  // 有数据才能翻转
         }
         return res.data.msg
     },
@@ -172,7 +172,7 @@ const videoStore = observable({
         // console.log(res)
         if (res.data.code === 200) {
             this.likes = res.data.data.res; // 倒序实现时间后的先显示
-            this.likes = this.likes.reverse();
+            if(this.likes)this.likes = this.likes.reverse(); // 有数据才能翻转
         }
         return res.data.msg
     },
@@ -200,7 +200,7 @@ const videoStore = observable({
         // console.log(res)
         if (res.data.code === 200) {
             this.collections = res.data.data.res; // 倒序实现时间后的先显示
-            this.collections = this.collections.reverse();
+            if(this.collections)this.collections = this.collections.reverse(); // 有数据才能翻转
         }
         return res.data.msg
     },
