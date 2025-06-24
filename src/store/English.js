@@ -16,8 +16,8 @@ const EnglishStore = observable({
   async getEverydayEnglish() {
     try {
       const result = await service.getEverydayEnglish();
-      console.log(result);
-        console.log(result.data);
+      // console.log(result);
+      //   console.log(result.data);
       if (result.data.code === 200) {
         runInAction(() => {
           // 在 runInAction 中修改状态
@@ -28,7 +28,7 @@ const EnglishStore = observable({
           this.translations = result.data.data.translations;
           this.ukphone = result.data.data.ukphone;
           this.ukspeech = result.data.data.ukspeech;
-          this.usphone = result.data.data.sphone;
+          this.usphone = result.data.data.usphone;
           this.usspeech = result.data.data.usspeech;
           this.word = result.data.data.word;
         });

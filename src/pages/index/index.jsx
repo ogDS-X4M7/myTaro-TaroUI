@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import Taro from '@tarojs/taro';
 import { View, Text, Button, Video, Image, Swiper, SwiperItem } from '@tarojs/components'
 import { useState, useEffect } from 'react';
-import { AtTag, AtButton, AtMessage, AtTabs, AtTabsPane, AtSearchBar, AtToast } from 'taro-ui'
+import { AtTag, AtButton, AtMessage, AtTabs, AtTabsPane, AtSearchBar, AtToast, AtIcon } from 'taro-ui'
 // import { useLoad } from '@tarojs/taro'
 import './index.scss'
 // import Item from '../../components/classComponent/classComponent';
@@ -34,6 +34,8 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
   const [successCity,setSuccessCity] = useState('') // 记录最后一次成功请求的城市名，可用于设置默认市/区，上面的city绑定了搜索栏所以不适合承担这个任务
   const [toastOpen,setToastOpen] = useState(false) // 轻提示开关信号，提示默认城市设置的成功
   const [englishTip,setEnglishTip] = useState(false) // 每日英语获取信号，获取过则为true，未获取则为false--显示提示
+  let UKAudio = Taro.createInnerAudioContext({useWebAudioImplement:true}) // 创建英式发音音频
+  let USAudio = Taro.createInnerAudioContext() // 创建美式发音音频
   let token = Taro.getStorageSync('token')
   let defaultCity = Taro.getStorageSync('defaultCity') // 开始就要获取，和token一样，token判断获取收藏，defaultCity判断获取天气
   const fetchData = async () => {
@@ -145,7 +147,26 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
 
   async function getEverydayEnglish() {
     const res = await EnglishStore.getEverydayEnglish();
-    if(res===true)setEnglishTip(true)
+    if(res===true){
+      // UKAudio.src = EnglishStore.ukspeech;
+      // console.log(UKAudio.src);
+      // 由于不是响应式，在这里设置的话会导致src并不更新， DOM 中的音频元素未更新，点击播放无效，而再次点击获取新知识时会直接播放下一个音频
+      setEnglishTip(true)
+    }
+  }
+
+  // 播放英式发音音频
+  function playUKAudio(){
+    UKAudio.src = EnglishStore.ukspeech;
+    // console.log('播放音频',UKAudio.src);
+    UKAudio.play();
+  }
+
+
+  // 播放美式发音音频
+  function playUSAudio(){
+    USAudio.src = EnglishStore.usspeech;
+    USAudio.play();
   }
 
   useEffect(() => {
@@ -328,7 +349,7 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
         </AtTabsPane>
         {/* 每日英语 */}
         <AtTabsPane current={current} index={3}>
-          <View style='font-size:18px;text-align:center;'>
+          <View >
             <AtButton onClick={getEverydayEnglish}>获取每日英语知识</AtButton>
             {
               englishTip
@@ -344,6 +365,83 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
                     )
                   })
                 }
+                {
+                  EnglishStore.ukphone
+                    ?<View className='UKaudio' onClick={playUKAudio}>
+                      英<Text>{EnglishStore.ukphone}</Text><AtIcon value='volume-plus' size='20' color='#5a70cd'></AtIcon>
+                    </View>
+                    :null
+                }
+                {
+                  EnglishStore.usphone
+                    ?<View className='USaudio' onClick={playUSAudio}>
+                      美<Text>{EnglishStore.usphone}</Text><AtIcon value='volume-plus' size='20' color='#5a70cd'></AtIcon>
+                    </View>
+                    :null
+                }
+                {
+                  EnglishStore.phrases.length
+                    ?<View className='phrasesArea'>
+                      <Text className='phrasesTitle'>常用短语：</Text>
+                      {
+                        EnglishStore.phrases.map((phrase)=>{
+                          return(
+                            <View key={phrase.id || phrase.p_content} className='phrase'>
+                              <Text>{phrase.p_content} </Text>
+                              <Text>{phrase.p_cn} </Text>
+                            </View>
+                          )
+                        })
+                      }
+                    </View>
+                    :null
+                }
+                {
+                  EnglishStore.sentences.length
+                    ?<View className='sentencesArea'>
+                      <Text className='sentencesTitle'>例句：</Text>
+                      {
+                        EnglishStore.sentences.map((sentence)=>{
+                          return(
+                            <View key={sentence.id || sentence.p_content} className='sentence'>
+                              <View>{sentence.s_content} </View>
+                              <View>{sentence.s_cn} </View>
+                            </View>
+                          )
+                        })
+                      }
+                    </View>
+                    :null
+                }
+                {
+                  EnglishStore.relWords.length
+                    ?<View className='relwordsArea'>
+                      <Text className='relwordsTitle'>关系词：</Text>
+                      {
+                        EnglishStore.relWords.map((relWord)=>{
+                          return(
+                            <View key={relWord.id || relWord.Pos} className='relWord'>
+                              {
+                                relWord.Hwds.map((Hwd)=>{
+                                  return (
+                                  <View>
+                                    <Text>{relWord.Pos}  </Text>
+                                    <Text>{Hwd.hwd}</Text>
+                                    <Text>{Hwd.tran_cn}</Text>
+                                  </View>)
+                                })
+                              }
+                            </View>
+                          )
+                        })
+                      }
+                      
+                    </View>
+                    :null
+                }
+                
+                <View></View>
+                <View></View>
               </View>
               :<View className='EnglishTip'>
                 每日英语提供每日经典英语例句、词汇和短语等内容，帮助您进行英语学习，提高语言能力。当然您可以多次点击按钮来学习更多，不过学习知识，质量比数量更重要，请量力而行。
