@@ -93,16 +93,23 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
         if (!likeThrottle) {
             setLikeThrottle(true)
             const res = await videoStore.updateLikes(signal)
-            if (signal === 1) {
-                setLikeOpened(true)
-                setTimeout(() => {
-                    setLikeOpened(false)
-                }, 1000)
+            if (res.data.code === 200) {
+                if (signal === 1) {
+                    setLikeOpened(true)
+                    setTimeout(() => {
+                        setLikeOpened(false)
+                    }, 1000)
+                } else {
+                    setUnlikeOpened(true)
+                    setTimeout(() => {
+                        setUnlikeOpened(false)
+                    }, 1000)
+                }
             } else {
-                setUnlikeOpened(true)
-                setTimeout(() => {
-                    setUnlikeOpened(false)
-                }, 1000)
+                Taro.atMessage({
+                    message: res.data.msg,
+                    type: 'info'
+                })
             }
             setLikeThrottle(false);
         } else {
@@ -118,16 +125,23 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
         if (!collectThrottle) {
             setCollectThrottle(true)
             const res = await videoStore.updateCollections(signal)
-            if (signal === 1) {
-                setCollectOpened(true)
-                setTimeout(() => {
-                    setCollectOpened(false)
-                }, 1000)
+            if (res.data.code === 200) {
+                if (signal === 1) {
+                    setCollectOpened(true)
+                    setTimeout(() => {
+                        setCollectOpened(false)
+                    }, 1000)
+                } else {
+                    setUncollectOpened(true)
+                    setTimeout(() => {
+                        setUncollectOpened(false)
+                    }, 1000)
+                }
             } else {
-                setUncollectOpened(true)
-                setTimeout(() => {
-                    setUncollectOpened(false)
-                }, 1000)
+                Taro.atMessage({
+                    message: res.data.msg,
+                    type: 'info'
+                })
             }
             setCollectThrottle(false)
         } else {
