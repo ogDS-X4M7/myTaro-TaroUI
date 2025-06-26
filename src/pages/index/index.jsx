@@ -162,7 +162,7 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
   }
 
   // 搜索对应单词
-  async function onActionClickWord(){
+  async function onActionClickWord() {
     console.log('搜索单词')
     const res = await WordStore.checkWord(word);
     if (res !== true) {
@@ -385,8 +385,8 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
             />
             {
               WordStore.word
-                ?<EnglishWeb EnglishStore={WordStore} word={WordStore.word}></EnglishWeb>
-                :null
+                ? <EnglishWeb EnglishStore={WordStore} word={WordStore.word}></EnglishWeb>
+                : null
             }
           </View>
         </AtTabsPane>
@@ -413,6 +413,6 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
   )
 })
 
-export default inject('counterStore', 'hotStore', 'videoStore', 'weatherStore', 'EnglishStore','WordStore')(observer(Index))
+export default inject('counterStore', 'hotStore', 'videoStore', 'weatherStore', 'EnglishStore', 'WordStore')(observer(Index))
 // observable 是用来创建 / 转换状态数据的，不能直接包装组件,将普通对象、数组或类转换为可观察对象。
 // observer 是 MobX 提供的高阶组件，用于将 React 组件转换为响应式组件。

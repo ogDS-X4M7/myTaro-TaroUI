@@ -53,7 +53,8 @@ export default {
             },
             success: function (res) {
                 // console.log(res.data)
-            }
+            },
+            timeout: 5000
         })
     },
     get(option) {

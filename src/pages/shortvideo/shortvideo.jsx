@@ -91,27 +91,36 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
 
     async function updateLikes(signal) {
         if (!likeThrottle) {
-            setLikeThrottle(true)
-            const res = await videoStore.updateLikes(signal)
-            if (res.data.code === 200) {
-                if (signal === 1) {
-                    setLikeOpened(true)
-                    setTimeout(() => {
-                        setLikeOpened(false)
-                    }, 1000)
+            // 本来不想做token处理，但是体验服点赞收藏会出现一直加载的问题，因此添加token处理
+            if (Taro.getStorageSync('token')) {
+                setLikeThrottle(true)
+                const res = await videoStore.updateLikes(signal)
+                if (res.data.code === 200) {
+                    if (signal === 1) {
+                        setLikeOpened(true)
+                        setTimeout(() => {
+                            setLikeOpened(false)
+                        }, 1000)
+                    } else {
+                        setUnlikeOpened(true)
+                        setTimeout(() => {
+                            setUnlikeOpened(false)
+                        }, 1000)
+                    }
                 } else {
-                    setUnlikeOpened(true)
-                    setTimeout(() => {
-                        setUnlikeOpened(false)
-                    }, 1000)
+                    Taro.atMessage({
+                        message: res.data.msg,
+                        type: 'info'
+                    })
                 }
+                setLikeThrottle(false);
             } else {
                 Taro.atMessage({
-                    message: res.data.msg,
+                    message: '请先登录',
                     type: 'info'
                 })
             }
-            setLikeThrottle(false);
+
         } else {
             Taro.atMessage({
                 message: '操作过快，请稍后重试',
@@ -123,27 +132,35 @@ const ShortVideo = forwardRef(({ videoStore }, ref) => {
 
     async function updateCollections(signal) {
         if (!collectThrottle) {
-            setCollectThrottle(true)
-            const res = await videoStore.updateCollections(signal)
-            if (res.data.code === 200) {
-                if (signal === 1) {
-                    setCollectOpened(true)
-                    setTimeout(() => {
-                        setCollectOpened(false)
-                    }, 1000)
+            if (Taro.getStorageSync('token')) {
+                setCollectThrottle(true)
+                const res = await videoStore.updateCollections(signal)
+                if (res.data.code === 200) {
+                    if (signal === 1) {
+                        setCollectOpened(true)
+                        setTimeout(() => {
+                            setCollectOpened(false)
+                        }, 1000)
+                    } else {
+                        setUncollectOpened(true)
+                        setTimeout(() => {
+                            setUncollectOpened(false)
+                        }, 1000)
+                    }
                 } else {
-                    setUncollectOpened(true)
-                    setTimeout(() => {
-                        setUncollectOpened(false)
-                    }, 1000)
+                    Taro.atMessage({
+                        message: res.data.msg,
+                        type: 'info'
+                    })
                 }
+                setCollectThrottle(false)
             } else {
                 Taro.atMessage({
-                    message: res.data.msg,
+                    message: '请先登录',
                     type: 'info'
                 })
             }
-            setCollectThrottle(false)
+
         } else {
             Taro.atMessage({
                 message: '操作过快，请稍后重试',
