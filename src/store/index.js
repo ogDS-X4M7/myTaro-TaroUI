@@ -4,6 +4,7 @@ import userStore from "./user";
 import videoStore from "./shortvideoes";
 import weatherStore from "./weather";
 import EnglishStore from "./English";
+import WordStore from "./word";
 
 const rootStore = {
     counterStore,
@@ -11,6 +12,7 @@ const rootStore = {
     userStore,
     videoStore,
     weatherStore,
-    EnglishStore
+    EnglishStore,
+    WordStore
 };
 export default rootStore;

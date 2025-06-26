@@ -7,10 +7,11 @@ import { AtTag, AtButton, AtMessage, AtTabs, AtTabsPane, AtSearchBar, AtToast, A
 import './index.scss'
 // import Item from '../../components/classComponent/classComponent';
 import HotItem from '../../components/HotItem/HotItem';
+import EnglishWeb from '../../components/English/English';
 import { inject, observer } from 'mobx-react';
 
 
-const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, EnglishStore }, ref) => {
+const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, EnglishStore, WordStore }, ref) => {
   // useLoad(() => {
   //   console.log('Page loaded.')
   // })
@@ -34,8 +35,9 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
   const [successCity, setSuccessCity] = useState('') // 记录最后一次成功请求的城市名，可用于设置默认市/区，上面的city绑定了搜索栏所以不适合承担这个任务
   const [toastOpen, setToastOpen] = useState(false) // 轻提示开关信号，提示默认城市设置的成功
   const [englishTip, setEnglishTip] = useState(false) // 每日英语获取信号，获取过则为true，未获取则为false--显示提示
-  let UKAudio = Taro.createInnerAudioContext({ useWebAudioImplement: true }) // 创建英式发音音频
-  let USAudio = Taro.createInnerAudioContext() // 创建美式发音音频
+  // let UKAudio = Taro.createInnerAudioContext({ useWebAudioImplement: true }) // 创建英式发音音频
+  // let USAudio = Taro.createInnerAudioContext() // 创建美式发音音频
+  const [word, setWord] = useState(''); // 设置搜索的单词
   let token = Taro.getStorageSync('token')
   let defaultCity = Taro.getStorageSync('defaultCity') // 开始就要获取，和token一样，token判断获取收藏，defaultCity判断获取天气
   const fetchData = async () => {
@@ -118,12 +120,12 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
   }
 
   // 实时修改搜索城市
-  function onChange(value) {
+  function onChangeCity(value) {
     setCity(value)
   }
 
   // 搜索城市天气
-  async function onActionClick() {
+  async function onActionClickCity() {
     const res = await weatherStore.getWeathers(city);
     if (res !== true) {
       Taro.atMessage({
@@ -154,19 +156,21 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
       setEnglishTip(true)
     }
   }
-
-  // 播放英式发音音频
-  function playUKAudio() {
-    UKAudio.src = EnglishStore.ukspeech;
-    // console.log('播放音频',UKAudio.src);
-    UKAudio.play();
+  // 实时修改搜索单词
+  function onChangeWord(value) {
+    setWord(value)
   }
 
-
-  // 播放美式发音音频
-  function playUSAudio() {
-    USAudio.src = EnglishStore.usspeech;
-    USAudio.play();
+  // 搜索对应单词
+  async function onActionClickWord(){
+    console.log('搜索单词')
+    const res = await WordStore.checkWord(word);
+    if (res !== true) {
+      Taro.atMessage({
+        message: res,
+        type: 'error'
+      })
+    }
   }
 
   useEffect(() => {
@@ -258,8 +262,8 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
               inputType='text'
               placeholder='请输入您要查看的市/区'
               value={city}
-              onChange={onChange}
-              onActionClick={onActionClick}
+              onChange={onChangeCity}
+              onActionClick={onActionClickCity}
             />
             {
               weatherStore.weathers.length
@@ -349,121 +353,11 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
         </AtTabsPane>
         {/* 每日英语 */}
         <AtTabsPane current={current} index={3}>
-          <View >
+          <View>
             <AtButton onClick={getEverydayEnglish}>获取每日英语知识</AtButton>
             {
               englishTip
-                ? <View>
-                  <View className='EnglishWord'>{EnglishStore.word}</View>
-                  {
-                    EnglishStore.translations.map((translation) => {
-                      return (
-                        <View key={translation.id || translation.pos} className='EnglishTranslations'>
-                          <Text className='translationPos'>{translation.pos}</Text>
-                          <Text className='translationTran'>{translation.tran_cn}</Text>
-                        </View>
-                      )
-                    })
-                  }
-                  {
-                    EnglishStore.ukphone
-                      ? <View className='UKaudio' onClick={playUKAudio}>
-                        英<Text>{EnglishStore.ukphone}</Text><AtIcon value='volume-plus' size='20' color='#5a70cd'></AtIcon>
-                      </View>
-                      : null
-                  }
-                  {
-                    EnglishStore.usphone
-                      ? <View className='USaudio' onClick={playUSAudio}>
-                        美<Text>{EnglishStore.usphone}</Text><AtIcon value='volume-plus' size='20' color='#5a70cd'></AtIcon>
-                      </View>
-                      : null
-                  }
-                  {
-                    EnglishStore.phrases.length
-                      ? <View className='phrasesArea'>
-                        <Text className='phrasesTitle'>常用短语：</Text>
-                        {
-                          EnglishStore.phrases.map((phrase) => {
-                            return (
-                              <View key={phrase.id || phrase.p_content} className='phrase'>
-                                <Text>{phrase.p_content} </Text>
-                                <Text>{phrase.p_cn} </Text>
-                              </View>
-                            )
-                          })
-                        }
-                      </View>
-                      : null
-                  }
-                  {
-                    EnglishStore.sentences.length
-                      ? <View className='sentencesArea'>
-                        <Text className='sentencesTitle'>例句：</Text>
-                        {
-                          EnglishStore.sentences.map((sentence) => {
-                            return (
-                              <View key={sentence.id || sentence.p_content} className='sentence'>
-                                <View>{sentence.s_content} </View>
-                                <View>{sentence.s_cn} </View>
-                              </View>
-                            )
-                          })
-                        }
-                      </View>
-                      : null
-                  }
-                  {
-                    EnglishStore.relWords.length
-                      ? <View className='relwordsArea'>
-                        <Text className='relwordsTitle'>关系词：</Text>
-                        {
-                          EnglishStore.relWords.map((relWord) => {
-                            return (
-                              <View key={relWord.id || relWord.Pos} className='relWord'>
-                                {
-                                  relWord.Hwds.map((Hwd) => {
-                                    return (
-                                      <View>
-                                        <Text>{Hwd.hwd} </Text>
-                                        <Text>{relWord.Pos} </Text>
-                                        <Text>{Hwd.tran}</Text>
-                                      </View>)
-                                  })
-                                }
-                              </View>
-                            )
-                          })
-                        }
-                      </View>
-                      : null
-                  }
-                  {
-                    EnglishStore.synonyms.length
-                      ? <View className='synonymsArea'>
-                        <Text className='synonymsTitle'>同义词：</Text>
-                        {
-                          EnglishStore.synonyms.map((synonym) => {
-                            return (
-                              <View key={synonym.id || synonym.pos} className='synonym'>
-                                <View>
-                                  <Text>{synonym.pos}  </Text>
-                                  <Text>{synonym.tran}:</Text>
-                                </View>
-                                {
-                                  synonym.Hwds.map((Hwd) => <AtTag circle>{Hwd.word}</AtTag>)
-                                }
-                              </View>
-                            )
-                          })
-                        }
-                      </View>
-                      : null
-                  }
-
-                  <View></View>
-                  <View></View>
-                </View>
+                ? <EnglishWeb EnglishStore={EnglishStore} word={EnglishStore.word}></EnglishWeb>
                 : <View className='EnglishTip'>
                   每日英语提供每日经典英语例句、词汇和短语等内容，帮助您进行英语学习，提高语言能力。当然您可以多次点击按钮来学习更多，不过学习知识，质量比数量更重要，请量力而行。
                 </View>
@@ -472,7 +366,20 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
         </AtTabsPane>
         {/* 单词详解 */}
         <AtTabsPane current={current} index={4}>
-          <View style='font-size:18px;text-align:center;height:100px;'>单词详解的内容</View>
+          <View>
+            <AtSearchBar
+              inputType='text'
+              placeholder='请输入您要查看的单词'
+              value={word}
+              onChange={onChangeWord}
+              onActionClick={onActionClickWord}
+            />
+            {
+              WordStore.word
+                ?<EnglishWeb EnglishStore={WordStore} word={WordStore.word}></EnglishWeb>
+                :null
+            }
+          </View>
         </AtTabsPane>
         {/* 携程样式 */}
         <AtTabsPane current={current} index={5}>
@@ -497,6 +404,6 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
   )
 })
 
-export default inject('counterStore', 'hotStore', 'videoStore', 'weatherStore', 'EnglishStore')(observer(Index))
+export default inject('counterStore', 'hotStore', 'videoStore', 'weatherStore', 'EnglishStore','WordStore')(observer(Index))
 // observable 是用来创建 / 转换状态数据的，不能直接包装组件,将普通对象、数组或类转换为可观察对象。
 // observer 是 MobX 提供的高阶组件，用于将 React 组件转换为响应式组件。

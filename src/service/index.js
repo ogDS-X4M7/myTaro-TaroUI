@@ -117,9 +117,16 @@ const service = {
             url: `https://v2.xxapi.cn/api/weather?city=${city}`,
         })
     },
+    // 获取每日英语
     getEverydayEnglish(){
         return httpService.get({
             url:'https://v2.xxapi.cn/api/randomenglishwords'
+        })
+    },
+    // 英语单词查找
+    checkWord(word){
+        return httpService.get({
+            url: `https://v2.xxapi.cn/api/englishwords?word=${word}`,
         })
     }
 }

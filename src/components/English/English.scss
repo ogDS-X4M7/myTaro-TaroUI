@@ -1,0 +1,81 @@
+.EveryDayEnglish {
+    padding: 40px;
+    .EnglishWord{
+        margin-bottom: 20px;
+        font: normal 700 50px/50px 'Microsoft Yahei';
+    }
+    .audio {
+        margin-bottom: 20px;
+    }
+    .EnglishTranslations {
+        margin-bottom: 20px;
+        font: normal 400 36px/36px 'Microsoft Yahei';
+    }
+    
+    .phrasesArea {
+        margin: 20px 0px;
+        .phrasesTitle {
+            color: #666;
+        }
+        .phrase {
+            display: flex;
+            justify-content: flex-start; /* 子元素靠左对齐 */
+            // margin: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            .pcontent {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                color: #5a70cd;
+            }
+            .ppcn {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+    }
+
+    .sentencesArea {
+        margin: 20px 0px;
+        .sentencesTitle {
+            color: #666;
+        }
+        .sentence {
+            padding: 18px 0px;
+            border-bottom: 1px solid #ddd;
+        }
+    }
+
+    .relwordsArea {
+        margin: 20px 0px;
+        border-bottom: 1px solid #ddd;
+        .relwordsTitle {
+            color: #666;
+        }
+        .relWord {
+            padding: 8px 0px;
+        }
+    }
+
+    .synonymsArea {
+        margin: 20px 0px;
+        .synonymsTitle {
+            color: #666;
+        }
+        .synonym {
+            padding: 18px 0px;
+            border-bottom: 1px solid #ddd;
+            .synonymTran {
+                margin: 10px 0px;
+                // color: blue;
+            }
+            .synonymTag {
+                margin:8px 3px;
+            }
+        }
+    }
+}
