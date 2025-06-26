@@ -1,7 +1,7 @@
 import { observable, runInAction } from "mobx";
 import service from "../service";
 import Taro from "@tarojs/taro";
-// 如果是体验服版本，就不要获取token，也不要定时器定时更新历史记录
+// 如果是体验服版本，就不要获取token，也不要定时器定时更新历史记录，简单的处理方法：找token，把if(token)及其内容全部注释即可
 const originToken = Taro.getStorageSync('token') // 获取初始token
 const videoStore = observable({
     videoes: [],
@@ -31,12 +31,12 @@ const videoStore = observable({
                         this.collectionSignal = false
                     }
                 });
-                if (this.token) {
-                    clearTimeout(this.timer)
-                    this.timer = setTimeout(() => {
-                        this.updateHistory({ token: this.token, history: this.videoes[this.index] })
-                    }, 5000)
-                }
+                // if (this.token) {
+                //     clearTimeout(this.timer)
+                //     this.timer = setTimeout(() => {
+                //         this.updateHistory({ token: this.token, history: this.videoes[this.index] })
+                //     }, 5000)
+                // }
                 return result.data.data;
             }
             return result.data.msg; // 因为其他原因没能获取数据，则返回原因
@@ -47,25 +47,25 @@ const videoStore = observable({
     async getNext() {
         if (this.index < this.videoes.length - 1) {
             this.index++;
-            if (this.token) {
-                runInAction(() => {
-                    // 在 runInAction 中修改状态
-                    if (this.likes.includes(this.videoes[this.index])) {
-                        this.likeSignal = true;
-                    } else {
-                        this.likeSignal = false;
-                    }
-                    if (this.collections.includes(this.videoes[this.index])) {
-                        this.collectionSignal = true
-                    } else {
-                        this.collectionSignal = false
-                    }
-                })
-                clearTimeout(this.timer)
-                this.timer = setTimeout(() => {
-                    this.updateHistory({ token: this.token, history: this.videoes[this.index] })
-                }, 5000)
-            }
+            // if (this.token) {
+            //     runInAction(() => {
+            //         // 在 runInAction 中修改状态
+            //         if (this.likes.includes(this.videoes[this.index])) {
+            //             this.likeSignal = true;
+            //         } else {
+            //             this.likeSignal = false;
+            //         }
+            //         if (this.collections.includes(this.videoes[this.index])) {
+            //             this.collectionSignal = true
+            //         } else {
+            //             this.collectionSignal = false
+            //         }
+            //     })
+            //     clearTimeout(this.timer)
+            //     this.timer = setTimeout(() => {
+            //         this.updateHistory({ token: this.token, history: this.videoes[this.index] })
+            //     }, 5000)
+            // }
             return this.videoes[this.index];
         } else {
             return this.getVideoes();
@@ -74,26 +74,26 @@ const videoStore = observable({
     async getPrev() {
         if (this.index > 0) {
             this.index--;
-            if (this.token) {
-                runInAction(() => {
-                    // 在 runInAction 中修改状态
-                    if (this.likes.includes(this.videoes[this.index])) {
-                        this.likeSignal = true;
-                    } else {
-                        this.likeSignal = false;
-                    }
-                    if (this.collections.includes(this.videoes[this.index])) {
-                        this.collectionSignal = true
-                    } else {
-                        this.collectionSignal = false
-                    }
-                })
-                // 每次看新视频都要清空计时，看的时间不满5秒不计入历史记录
-                clearTimeout(this.timer)
-                this.timer = setTimeout(() => {
-                    this.updateHistory({ token: this.token, history: this.videoes[this.index] })
-                }, 5000)
-            }
+            // if (this.token) {
+            //     runInAction(() => {
+            //         // 在 runInAction 中修改状态
+            //         if (this.likes.includes(this.videoes[this.index])) {
+            //             this.likeSignal = true;
+            //         } else {
+            //             this.likeSignal = false;
+            //         }
+            //         if (this.collections.includes(this.videoes[this.index])) {
+            //             this.collectionSignal = true
+            //         } else {
+            //             this.collectionSignal = false
+            //         }
+            //     })
+            //     // 每次看新视频都要清空计时，看的时间不满5秒不计入历史记录
+            //     clearTimeout(this.timer)
+            //     this.timer = setTimeout(() => {
+            //         this.updateHistory({ token: this.token, history: this.videoes[this.index] })
+            //     }, 5000)
+            // }
             return this.videoes[this.index];
         } else {
             return null

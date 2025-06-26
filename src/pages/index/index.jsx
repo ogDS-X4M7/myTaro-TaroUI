@@ -47,46 +47,46 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
         'type': 'success',
       })
     } else {
-      token = Taro.getStorageSync('token')
-      // console.log(token);
-      // 有token再发请求，不然taro框架内部的文件发现请求失败就要在控制台报错，虽然不影响功能，但不美观
-      if (token) {
-        const getResult = await hotStore.getHots();
-        if (getResult === true) {
-          // console.log('获取数据成功')
-          setHotsFlag(true);
-          Taro.atMessage({
-            'message': '获取数据成功',
-            'type': '',
-          })
-        } else {
-          Taro.atMessage({
-            'message': `获取失败，${getResult}`,
-            'type': 'error',
-          })
-        }
-      } else {
-        Taro.atMessage({
-          'message': '请先登录',
-          'type': 'error',
-        })
-      }
-
-      // 下面是体验服版本，把从else开始部分全部注释掉换成下面即可，也就是不要token
-      // const getResult = await hotStore.getHots();
-      // if (getResult === true) {
-      //   // console.log('获取数据成功')
-      //   setHotsFlag(true);
-      //   Taro.atMessage({
-      //     'message': '获取数据成功',
-      //     'type': '',
-      //   })
+      // token = Taro.getStorageSync('token')
+      // // console.log(token);
+      // // 有token再发请求，不然taro框架内部的文件发现请求失败就要在控制台报错，虽然不影响功能，但不美观
+      // if (token) {
+      //   const getResult = await hotStore.getHots();
+      //   if (getResult === true) {
+      //     // console.log('获取数据成功')
+      //     setHotsFlag(true);
+      //     Taro.atMessage({
+      //       'message': '获取数据成功',
+      //       'type': '',
+      //     })
+      //   } else {
+      //     Taro.atMessage({
+      //       'message': `获取失败，${getResult}`,
+      //       'type': 'error',
+      //     })
+      //   }
       // } else {
       //   Taro.atMessage({
-      //     'message': `获取失败，${getResult}`,
+      //     'message': '请先登录',
       //     'type': 'error',
       //   })
       // }
+
+      // 下面是体验服版本，把从else开始部分全部注释掉换成下面即可，也就是不要token
+      const getResult = await hotStore.getHots();
+      if (getResult === true) {
+        // console.log('获取数据成功')
+        setHotsFlag(true);
+        Taro.atMessage({
+          'message': '获取数据成功',
+          'type': '',
+        })
+      } else {
+        Taro.atMessage({
+          'message': `获取失败，${getResult}`,
+          'type': 'error',
+        })
+      }
     }
   }
 
@@ -231,6 +231,15 @@ const Index = forwardRef(({ counterStore, hotStore, videoStore, weatherStore, En
                 </View>
                 <View className='at-article__p'>
                   ✅ 首页-热点内容获取
+                </View>
+                <View className='at-article__p'>
+                  ✅ 首页-天气预报
+                </View>
+                <View className='at-article__p'>
+                  ✅ 首页-每日英语
+                </View>
+                <View className='at-article__p'>
+                  ✅ 首页-单词详解
                 </View>
                 <View className='at-article__p'>
                   ✅ 短视频播放功能
